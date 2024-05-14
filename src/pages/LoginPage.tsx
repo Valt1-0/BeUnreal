@@ -61,18 +61,15 @@ const LoginPage: React.FC = () => {
           <IonTitle>Login</IonTitle>
         </IonToolbar>
       </IonHeader>
-      <IonContent className="ion-padding">
-        <IonText
-          color="danger"
-          className="padding"
-          style={{ fontWeight: "500" }}
-        >
+      <IonContent className="p-8">
+        <IonText color="danger" className="p-8" style={{ fontWeight: "500" }}>
           {initializationError && initializationError.message}
         </IonText>
 
         <IonItem>
           <IonLabel position="floating">Email Address</IonLabel>
           <IonInput
+            className="mt-6"
             type="email"
             onIonChange={(e) => {
               setEmail(e.detail.value!);
@@ -83,6 +80,7 @@ const LoginPage: React.FC = () => {
         <IonItem>
           <IonLabel position="floating">Password</IonLabel>
           <IonInput
+            className="mt-6"
             type="password"
             onIonChange={(e) => {
               setPassword(e.detail.value!);
@@ -90,10 +88,10 @@ const LoginPage: React.FC = () => {
             name="password"
           />
         </IonItem>
-        <div style={{ padding: 10, paddingTop: 20 }}>
+        <div className="flex flex-col  items-center">
           <IonButton
-            expand="full"
-            style={{ margin: 14 }}
+            fill="clear"
+            className="mt-6 px-2 bg-white text-black font-eloquiabold rounded-md transform active:scale-90"
             onClick={(e) => {
               if (!e.currentTarget) {
                 return;
@@ -105,8 +103,8 @@ const LoginPage: React.FC = () => {
             {isAuth ? "Logged In" : "Login"}
           </IonButton>
           <IonButton
-            expand="full"
-            style={{ margin: 14 }}
+            fill="clear"
+            className="mt-6 px-2 bg-white text-black font-eloquiabold rounded-md transform active:scale-90"
             onClick={(e) => {
               e.preventDefault();
               history.push("/register");

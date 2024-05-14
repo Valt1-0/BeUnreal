@@ -1,5 +1,14 @@
-import { IonContent, IonPage } from "@ionic/react";
+import {
+  IonPage,
+  IonContent,
+  IonInput,
+  IonButton,
+  IonToast,
+  IonLabel,
+} from "@ionic/react";
+
 import React, { useState } from "react";
+
 import { MobXProviderContext, observer } from "mobx-react";
 import { useHistory } from "react-router";
 
@@ -13,15 +22,23 @@ const Register: React.FC = () => {
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState<any>(null);
 
-  const [errorInfo, setErrorInfo] = useState({ errMsg: "" });
+  interface ErrorInfo {
+    showErrorToast: boolean;
+    errMsg: string;
+  }
 
-  const _doCreateAccount = async () => {
-    try {
-      let r = await store.doCreateUser({
-        email,
-        password,
-        username,
-      });
+  const [errorInfo, setErrorInfo] = useState<ErrorInfo>({
+    showErrorToast: false,
+    errMsg: "",
+  });
+
+   const _doCreateAccount = async () => {
+     try {
+       let r = await store.doCreateUser({
+         email,
+         password,
+         username,,
+       });
 
       if (r.code) {
         throw r;
@@ -30,7 +47,7 @@ const Register: React.FC = () => {
       }
     } catch (e: any) {
       console.log(e);
-      setErrorInfo({ errMsg: e.message });
+      setErrorInfo({ showErrorToast: true, errMsg: e.message });
     }
   };
 
@@ -56,6 +73,7 @@ const Register: React.FC = () => {
     if (currentStep === 1) {
       if (username.length < 3 || username.length > 50) {
         setErrorInfo({
+          showErrorToast: true,
           errMsg: "Username must be between 3 and 50 characters.",
         });
         return;
@@ -64,6 +82,7 @@ const Register: React.FC = () => {
     } else if (currentStep === 2) {
       if (!email.includes("@")) {
         setErrorInfo({
+          showErrorToast: true,
           errMsg: "Please enter a valid email address.",
         });
         return;
@@ -74,6 +93,7 @@ const Register: React.FC = () => {
         /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
       if (!password.match(passwordRegex)) {
         setErrorInfo({
+          showErrorToast: true,
           errMsg:
             "Password must contain at least 8 characters, including at least one uppercase letter, one lowercase letter, one digit, and one special character.",
         });
@@ -81,6 +101,7 @@ const Register: React.FC = () => {
       }
       if (password !== confirmPassword) {
         setErrorInfo({
+          showErrorToast: true,
           errMsg: "Passwords do not match.",
         });
         return;
@@ -206,6 +227,15 @@ const Register: React.FC = () => {
             </li>
           </ul>
         </div>
+        <IonToast
+          color="danger"
+          isOpen={errorInfo.showErrorToast}
+          onDidDismiss={() =>
+            setErrorInfo({ showErrorToast: false, errMsg: "" })
+          }
+          message={errorInfo.errMsg}
+          duration={2000}
+        />
       </IonContent>
     </IonPage>
   );
