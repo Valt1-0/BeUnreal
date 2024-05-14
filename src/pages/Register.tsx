@@ -1,4 +1,4 @@
-import { IonContent, IonPage } from "@ionic/react";
+import { IonContent, IonPage, IonToast } from "@ionic/react";
 import React, { useState } from "react";
 
 import { MobXProviderContext, observer } from "mobx-react";
@@ -13,7 +13,15 @@ const Register: React.FC = () => {
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState<any>(null);
   
-  const [errorInfo, setErrorInfo] = useState({});
+ interface ErrorInfo {
+   showErrorToast: boolean;
+   errMsg: string;
+ }
+
+ const [errorInfo, setErrorInfo] = useState<ErrorInfo>({
+   showErrorToast: false,
+   errMsg: "",
+ });
 
  const _doCreateAccount = async () => {
    try {
@@ -137,7 +145,9 @@ const Register: React.FC = () => {
           {formData && (
             <div>
               <button
-                onClick={() => {
+                onClick={(e) => {
+                  if (!e.currentTarget) return;
+                  e.preventDefault();
                   _doCreateAccount();
                 }}
                 className="mt-4 px-4 py-3 bg-green-500 text-white font-eloquiabold rounded-md"
@@ -180,9 +190,16 @@ const Register: React.FC = () => {
             </li>
           </ul>
         </div>
+        <IonToast
+          color="danger"
+          isOpen={errorInfo.showErrorToast}
+          onDidDismiss={() => setErrorInfo({ showErrorToast: false, errMsg: "" })}
+          message={errorInfo.errMsg}
+          duration={2000}
+        />
       </IonContent>
     </IonPage>
   );
 };
 
-export default Register;
+export default observer(Register);
