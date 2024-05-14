@@ -1,26 +1,28 @@
-import React from 'react';
-import { createRoot } from 'react-dom/client';
-import App from './App';
+import React from "react";
+import { createRoot } from "react-dom/client";
+import App from "./App";
 import { initializeApp } from "firebase/app";
 import { getAnalytics } from "firebase/analytics";
-import { firebaseConfig } from './store/Firebase';
-
+import { StatusBar, Style } from "@capacitor/status-bar";
+import { Provider } from "mobx-react";
+import { Store } from "./store";
 // Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
-console.log(analytics);
-
+// const app = initializeApp(firebaseConfig);
+// const analytics = getAnalytics(app);
+// console.log(analytics);
 
 const setStatusBarStyleDark = async () => {
-  await StatusBar.setStyle({ style: Style.Dark });
+ // await StatusBar.setStyle({ style: Style.Dark });
 };
 
-setStatusBarStyleDark();
+const store = new Store();
 
-const container = document.getElementById('root');
+//setStatusBarStyleDark();
+
+const container = document.getElementById("root");
 const root = createRoot(container!);
 root.render(
-  <React.StrictMode>
+  <Provider store={store}>
     <App />
-  </React.StrictMode>
+  </Provider>
 );

@@ -105,8 +105,7 @@ export class Store {
       let newUser = await firebaseService.registerUser({
         email: _params.email,
         password: _params.password,
-        firstName: _params.firstName,
-        lastName: _params.lastName,
+        username: _params.username,
       });
       return newUser;
     } catch (err) {

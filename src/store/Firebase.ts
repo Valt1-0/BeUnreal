@@ -79,8 +79,7 @@ export const logOut = () => {
 };
 
 interface UserInfo {
-  lastName: string;
-  firstName: string;
+  username: string;
   email: string;
   password: string;
 }
@@ -92,14 +91,13 @@ export const registerUser = (userInfo: UserInfo) => {
     userInfo.email,
     userInfo.password
   ).then((newUser) => {
-    let { email, firstName, lastName } = userInfo;
+    let { email, username } = userInfo;
 
     return addDoc(collection(db, "users"), {
       email,
-      firstName,
-      lastName,
+      username,
     }).then(() => {
-      return { ...newUser.user, firstName, lastName };
+      return { ...newUser.user, username };
     });
   });
 };

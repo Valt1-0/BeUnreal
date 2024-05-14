@@ -1,13 +1,38 @@
 import { IonContent, IonPage } from "@ionic/react";
 import React, { useState } from "react";
 
+import { MobXProviderContext, observer } from "mobx-react";
+import { useHistory } from "react-router";
 const Register: React.FC = () => {
+  const { store } = React.useContext(MobXProviderContext);
+    const history = useHistory();
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState<any>(null);
+  
+  const [errorInfo, setErrorInfo] = useState({});
+
+ const _doCreateAccount = async () => {
+   try {
+     let r = await store.doCreateUser({
+       email,
+       password,
+       username
+     });
+
+     if (r.code) {
+       throw r;
+     } else {
+       history.replace("/home");
+     }
+   } catch (e: any) {
+     console.log(e);
+     setErrorInfo({ showErrorToast: true, errMsg: e.message });
+   }
+ };
 
   const handleUsernameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setUsername(e.target.value);
@@ -43,6 +68,8 @@ const Register: React.FC = () => {
   };
 
   const handleSubmit = () => {
+
+
     console.log("Form submitted with data:", formData);
   };
 
@@ -110,7 +137,9 @@ const Register: React.FC = () => {
           {formData && (
             <div>
               <button
-                onClick={handleSubmit}
+                onClick={() => {
+                  _doCreateAccount();
+                }}
                 className="mt-4 px-4 py-3 bg-green-500 text-white font-eloquiabold rounded-md"
               >
                 Soumettre
