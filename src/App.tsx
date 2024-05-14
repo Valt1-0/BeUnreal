@@ -31,7 +31,7 @@ const PrivateRoutes: React.FC = () => {
         {/****** AUTH CREATE ACCOUNT */}
         <Route path="/login" component={LoginPage} exact={true} />
         <Route path="/register" component={Register} exact={true} />
-        <Redirect exact from='/' to='/login' />
+        <Redirect to="/login" />
       </IonRouterOutlet>
     </IonReactRouter>
   );
@@ -42,6 +42,7 @@ const PublicRoutes: React.FC = () => {
     <IonReactRouter>
       <Route path="/home" component={Home} />
       <Route path="/" render={() => <Redirect to="/home" />} />
+      <Redirect to="/home" />
     </IonReactRouter>
   );
 };
