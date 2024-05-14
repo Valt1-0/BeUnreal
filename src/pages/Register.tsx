@@ -1,63 +1,53 @@
-import { IonContent, IonPage, IonToast } from "@ionic/react";
+import {
+  IonPage,
+  IonContent,
+  IonInput,
+  IonButton,
+  IonToast,
+  IonLabel,
+} from "@ionic/react";
+
 import React, { useState } from "react";
 
 import { MobXProviderContext, observer } from "mobx-react";
 import { useHistory } from "react-router";
 const Register: React.FC = () => {
   const { store } = React.useContext(MobXProviderContext);
-    const history = useHistory();
-  const [username, setUsername] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
+  const history = useHistory();
+  const [username, setUsername] = useState<any>();
+  const [email, setEmail] = useState<any>();
+  const [password, setPassword] = useState<any>();
+  const [confirmPassword, setConfirmPassword] = useState<any>();
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState<any>(null);
-  
- interface ErrorInfo {
-   showErrorToast: boolean;
-   errMsg: string;
- }
 
- const [errorInfo, setErrorInfo] = useState<ErrorInfo>({
-   showErrorToast: false,
-   errMsg: "",
- });
+  interface ErrorInfo {
+    showErrorToast: boolean;
+    errMsg: string;
+  }
 
- const _doCreateAccount = async () => {
-   try {
-     let r = await store.doCreateUser({
-       email,
-       password,
-       username
-     });
+  const [errorInfo, setErrorInfo] = useState<ErrorInfo>({
+    showErrorToast: false,
+    errMsg: "",
+  });
 
-     if (r.code) {
-       throw r;
-     } else {
-       history.replace("/home");
-     }
-   } catch (e: any) {
-     console.log(e);
-     setErrorInfo({ showErrorToast: true, errMsg: e.message });
-   }
- };
+  const _doCreateAccount = async () => {
+    try {
+      let r = await store.doCreateUser({
+        email,
+        password,
+        username,
+      });
 
-  const handleUsernameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setUsername(e.target.value);
-  };
-
-  const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setEmail(e.target.value);
-  };
-
-  const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setPassword(e.target.value);
-  };
-
-  const handleConfirmPasswordChange = (
-    e: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    setConfirmPassword(e.target.value);
+      if (r.code) {
+        throw r;
+      } else {
+        history.replace("/home");
+      }
+    } catch (e: any) {
+      console.log(e);
+      setErrorInfo({ showErrorToast: true, errMsg: e.message });
+    }
   };
 
   const handleNextStep = () => {
@@ -75,76 +65,84 @@ const Register: React.FC = () => {
     }
   };
 
-  const handleSubmit = () => {
-
-
-    console.log("Form submitted with data:", formData);
-  };
-
   return (
     <IonPage>
-      <IonContent>
-        <p className="text-xl text-white font-eloquiabold text-center mt-4">
+      <IonContent className="overflow">
+        <IonLabel className="text-xl text-white font-eloquiabold text-center mt-4">
           BeUnreal
-        </p>
-        <div className="w-auto h-auto flex flex-col items-center justify-center mt-20">
+        </IonLabel>
+        <div className="w-100 h-auto flex flex-col items-center justify-center mt-20">
           {currentStep === 1 && (
             <>
-              <p className="text-xl text-white font-eloquiabold">
+              <IonLabel className="text-xl text-white font-eloquiabold">
                 Quel est votre nom d'utilisateur ?
-              </p>
-              <input
+              </IonLabel>
+              <IonInput
                 className="bg-black mt-4 p-3 border font-eloquiabold border-white focus:border-white rounded-md shadow-sm"
                 type="text"
                 value={username}
-                onChange={handleUsernameChange}
+                onIonChange={(e) => {
+                  if (!e.detail.value) return;
+                  setUsername(e.detail.value);
+                }}
               />
             </>
           )}
           {currentStep === 2 && (
             <>
-              <p className="text-xl text-white font-eloquiabold">
+              <IonLabel className="text-xl text-white font-eloquiabold">
                 Quel est votre adresse e-mail ?
-              </p>
-              <input
+              </IonLabel>
+              <IonInput
                 className="bg-black mt-4 p-3 border font-eloquiabold border-white focus:border-white rounded-md shadow-sm"
                 type="email"
                 value={email}
-                onChange={handleEmailChange}
+                onIonChange={(e) => {
+                  console.log(e.detail.value);
+                  if (!e.detail.value) return;
+                  setEmail(e.detail.value);
+                }}
               />
             </>
           )}
           {currentStep === 3 && (
             <>
-              <p className="text-xl text-white font-eloquiabold">
+              <IonLabel className="text-xl text-white font-eloquiabold">
                 Choisissez un mot de passe
-              </p>
-              <input
+              </IonLabel>
+              <IonInput
                 className="bg-black mt-4 p-3 border font-eloquiabold border-white focus:border-white rounded-md shadow-sm"
                 type="password"
                 value={password}
-                onChange={handlePasswordChange}
+                onIonChange={(e) => {
+                  if (!e.detail.value) return;
+                  setPassword(e.detail.value);
+                }}
               />
-              <p className="text-xl text-white font-eloquiabold mt-4">
+              <IonLabel className="text-xl text-white font-eloquiabold mt-4">
                 Confirmez votre mot de passe
-              </p>
-              <input
+              </IonLabel>
+              <IonInput
                 className="bg-black mt-2 p-3 border font-eloquiabold border-white focus:border-white rounded-md shadow-sm"
                 type="password"
                 value={confirmPassword}
-                onChange={handleConfirmPasswordChange}
+                onIonChange={(e) => {
+                  if (!e.detail.value) return;
+                  setConfirmPassword(e.detail.value);
+                }}
               />
             </>
           )}
-          <button
+          <IonButton
+            fill="clear"
             onClick={handleNextStep}
-            className="mt-40 px-4 py-3 bg-white text-black font-eloquiabold rounded-md"
+            className="mt-40 px-2 py-1 bg-white text-black font-eloquiabold rounded-md transform active:scale-90"
           >
             {currentStep === 3 ? "Terminer" : "Continuer"}
-          </button>
+          </IonButton>
           {formData && (
             <div>
-              <button
+              <IonButton
                 onClick={(e) => {
                   if (!e.currentTarget) return;
                   e.preventDefault();
@@ -153,7 +151,7 @@ const Register: React.FC = () => {
                 className="mt-4 px-4 py-3 bg-green-500 text-white font-eloquiabold rounded-md"
               >
                 Soumettre
-              </button>
+              </IonButton>
               <p className="flex flex-col text-white font-eloquiabold  justify-center items-center">
                 {formData.username}
                 {formData.email}
@@ -193,7 +191,9 @@ const Register: React.FC = () => {
         <IonToast
           color="danger"
           isOpen={errorInfo.showErrorToast}
-          onDidDismiss={() => setErrorInfo({ showErrorToast: false, errMsg: "" })}
+          onDidDismiss={() =>
+            setErrorInfo({ showErrorToast: false, errMsg: "" })
+          }
           message={errorInfo.errMsg}
           duration={2000}
         />

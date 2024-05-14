@@ -1,4 +1,4 @@
-import { Redirect, Route } from "react-router-dom";
+import { Redirect, Route, } from "react-router-dom";
 import React, { useEffect, useState } from "react";
 import { IonApp, IonRouterOutlet, setupIonicReact,IonLoading } from "@ionic/react";
 import { IonReactRouter } from "@ionic/react-router";
@@ -31,6 +31,7 @@ const PrivateRoutes: React.FC = () => {
         {/****** AUTH CREATE ACCOUNT */}
         <Route path="/login" component={LoginPage} exact={true} />
         <Route path="/register" component={Register} exact={true} />
+        <Redirect exact from='/' to='/login' />
       </IonRouterOutlet>
     </IonReactRouter>
   );
