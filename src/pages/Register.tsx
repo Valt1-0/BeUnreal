@@ -1,38 +1,38 @@
 import { IonContent, IonPage } from "@ionic/react";
 import React, { useState } from "react";
-
 import { MobXProviderContext, observer } from "mobx-react";
 import { useHistory } from "react-router";
+
 const Register: React.FC = () => {
   const { store } = React.useContext(MobXProviderContext);
-    const history = useHistory();
+  const history = useHistory();
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState<any>(null);
-  
-  const [errorInfo, setErrorInfo] = useState({});
 
- const _doCreateAccount = async () => {
-   try {
-     let r = await store.doCreateUser({
-       email,
-       password,
-       username
-     });
+  const [errorInfo, setErrorInfo] = useState({ errMsg: "" });
 
-     if (r.code) {
-       throw r;
-     } else {
-       history.replace("/home");
-     }
-   } catch (e: any) {
-     console.log(e);
-     setErrorInfo({ showErrorToast: true, errMsg: e.message });
-   }
- };
+  const _doCreateAccount = async () => {
+    try {
+      let r = await store.doCreateUser({
+        email,
+        password,
+        username,
+      });
+
+      if (r.code) {
+        throw r;
+      } else {
+        history.replace("/home");
+      }
+    } catch (e: any) {
+      console.log(e);
+      setErrorInfo({ errMsg: e.message });
+    }
+  };
 
   const handleUsernameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setUsername(e.target.value);
@@ -53,23 +53,44 @@ const Register: React.FC = () => {
   };
 
   const handleNextStep = () => {
-    if (currentStep === 1 && username !== "") {
+    if (currentStep === 1) {
+      if (username.length < 3 || username.length > 50) {
+        setErrorInfo({
+          errMsg: "Username must be between 3 and 50 characters.",
+        });
+        return;
+      }
       setCurrentStep((prevStep) => prevStep + 1);
-    } else if (currentStep === 2 && email !== "") {
+    } else if (currentStep === 2) {
+      if (!email.includes("@")) {
+        setErrorInfo({
+          errMsg: "Please enter a valid email address.",
+        });
+        return;
+      }
       setCurrentStep((prevStep) => prevStep + 1);
-    } else if (
-      currentStep === 3 &&
-      password !== "" &&
-      password === confirmPassword
-    ) {
+    } else if (currentStep === 3) {
+      const passwordRegex =
+        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+      if (!password.match(passwordRegex)) {
+        setErrorInfo({
+          errMsg:
+            "Password must contain at least 8 characters, including at least one uppercase letter, one lowercase letter, one digit, and one special character.",
+        });
+        return;
+      }
+      if (password !== confirmPassword) {
+        setErrorInfo({
+          errMsg: "Passwords do not match.",
+        });
+        return;
+      }
       setCurrentStep((prevStep) => prevStep + 1);
       setFormData({ username, email, password });
     }
   };
 
   const handleSubmit = () => {
-
-
     console.log("Form submitted with data:", formData);
   };
 
@@ -127,6 +148,11 @@ const Register: React.FC = () => {
                 onChange={handleConfirmPasswordChange}
               />
             </>
+          )}
+          {errorInfo && (
+            <p className="text-red-500 font-eloquiabold mt-4">
+              {errorInfo.errMsg}
+            </p>
           )}
           <button
             onClick={handleNextStep}

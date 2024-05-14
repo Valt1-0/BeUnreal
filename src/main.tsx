@@ -6,10 +6,7 @@ import { getAnalytics } from "firebase/analytics";
 import { StatusBar, Style } from "@capacitor/status-bar";
 import { Provider } from "mobx-react";
 import { Store } from "./store";
-// Initialize Firebase
-// const app = initializeApp(firebaseConfig);
-// const analytics = getAnalytics(app);
-// console.log(analytics);
+
 
 const setStatusBarStyleDark = async () => {
  // await StatusBar.setStyle({ style: Style.Dark });
