@@ -3,7 +3,7 @@ import { createRoot } from 'react-dom/client';
 import App from './App';
 import { initializeApp } from "firebase/app";
 import { getAnalytics } from "firebase/analytics";
-import { firebaseConfig } from './db/Firebase';
+import { firebaseConfig } from './store/Firebase';
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
