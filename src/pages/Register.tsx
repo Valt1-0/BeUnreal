@@ -1,17 +1,8 @@
-import {
-  IonPage,
-  IonContent,
-  IonInput,
-  IonButton,
-  IonToast,
-  IonLabel,
-} from "@ionic/react";
-
+import { IonContent, IonPage, IonToast } from "@ionic/react";
 import React, { useState } from "react";
 
 import { MobXProviderContext, observer } from "mobx-react";
 import { useHistory } from "react-router";
-
 const Register: React.FC = () => {
   const { store } = React.useContext(MobXProviderContext);
   const history = useHistory();
@@ -32,13 +23,13 @@ const Register: React.FC = () => {
     errMsg: "",
   });
 
-   const _doCreateAccount = async () => {
-     try {
-       let r = await store.doCreateUser({
-         email,
-         password,
-         username,,
-       });
+  const _doCreateAccount = async () => {
+    try {
+      let r = await store.doCreateUser({
+        email,
+        password,
+        username,
+      });
 
       if (r.code) {
         throw r;
@@ -169,11 +160,6 @@ const Register: React.FC = () => {
                 onChange={handleConfirmPasswordChange}
               />
             </>
-          )}
-          {errorInfo && (
-            <p className="text-red-500 font-eloquiabold mt-4">
-              {errorInfo.errMsg}
-            </p>
           )}
           <button
             onClick={handleNextStep}
