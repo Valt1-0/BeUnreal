@@ -20,6 +20,7 @@ import '@ionic/react/css/palettes/dark.always.css';
 
 /* Theme variables */
 import './theme/variables.css';
+import LoginPage from "./pages/LoginPage";
 
 setupIonicReact();
 
@@ -28,8 +29,8 @@ const PrivateRoutes: React.FC = () => {
     <IonReactRouter>
       <IonRouterOutlet>
         {/****** AUTH CREATE ACCOUNT */}
+        <Route path="/login" component={LoginPage} exact={true} />
         <Route path="/register" component={Register} exact={true} />
-        <Route path="/" component={Register} exact={true} />
       </IonRouterOutlet>
     </IonReactRouter>
   );
