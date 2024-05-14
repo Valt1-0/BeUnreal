@@ -1,0 +1,16 @@
+/* For information on how to create your own theme, please see:
+http://ionicframework.com/docs/theming/ */
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@font-face {
+  font-family: "EloquiaBold";
+  src: url(/assets/fonts/EloquiaDisplay-ExtraBold.otf) format("opentype");
+}
+
+@font-face {
+  font-family: "EloquiaLight";
+  src: url(/assets/fonts/EloquiaDisplay-ExtraLight.otf) format("opentype");
+}
