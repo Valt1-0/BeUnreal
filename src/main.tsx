@@ -11,6 +11,12 @@ const analytics = getAnalytics(app);
 console.log(analytics);
 
 
+const setStatusBarStyleDark = async () => {
+  await StatusBar.setStyle({ style: Style.Dark });
+};
+
+setStatusBarStyleDark();
+
 const container = document.getElementById('root');
 const root = createRoot(container!);
 root.render(
