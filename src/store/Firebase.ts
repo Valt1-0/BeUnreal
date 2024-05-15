@@ -1,9 +1,6 @@
 // TODO: Add SDKs for Firebase products that you want to use
 // https://firebase.google.com/docs/web/setup#available-libraries
 
-// Your web app's Firebase configuration
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
-
 import { initializeApp } from "firebase/app";
 import {
   getAuth,
@@ -297,7 +294,7 @@ export const getLatestMessage = (
 ) => {
   const messagesRef = query(
     collection(db, `chats/${chatId}/messages`),
-    orderBy("timestamp", "desc"),
+    orderBy('timestamp', 'desc'),
     limit(1)
   );
 
@@ -305,16 +302,4 @@ export const getLatestMessage = (
     const message: Message = snapshot.docs[0]?.data() as Message;
     callback(message);
   });
-};
-
-export const deleteChatForUser = async (chatId: string, userId: string) => {
-  const participantDataRef = doc(
-    db,
-    `chats/${chatId}/participantData/${userId}`
-  );
-  await setDoc(
-    participantDataRef,
-    { deletedAt: serverTimestamp() },
-    { merge: true }
-  );
 };

@@ -10,6 +10,7 @@ import {
 import React, { useState, useEffect } from "react";
 import { Camera, CameraResultType } from "@capacitor/camera";
 import { observer, MobXProviderContext } from "mobx-react";
+import Header from "../components/Header";
 
 const Home: React.FC = () => {
   const { store } = React.useContext(MobXProviderContext);
@@ -40,7 +41,7 @@ const Home: React.FC = () => {
 
   return (
     <IonPage>
-      <IonContent className="ion-padding" fullscreen>
+      <IonContent>
         <div className="h-full flex flex-col justify-center items-center">
           <p className="text-3xl text-white font-eloquiabold">
             Bienvenue {authenticatedUser?.username}

@@ -22,25 +22,20 @@ const Tchat: React.FC = () => {
   }, []);
 
   const handleCreateTchat = async () => {
-  
     const tchat = await store.doCreateChat([authenticatedUser.uid]);
     console.log(tchat);
+  };
+
+  return (
+    <IonPage>
+      <IonContent>
+        <div className="h-full flex flex-col justify-center items-center">
+          <p className="text-3xl text-white font-eloquiabold">Bienvenue</p>
+          <IonButton onClick={handleCreateTchat}>Create tchat</IonButton>
+        </div>
+      </IonContent>
+    </IonPage>
+  );
 };
 
-
-
-      return (
-        <IonPage>
-          <IonContent>
-            <div className="h-full flex flex-col justify-center items-center">
-              <p className="text-3xl text-white font-eloquiabold">Bienvenue</p>
-              <IonButton onClick={handleCreateTchat}>Create tchat</IonButton>
-            </div>
-          </IonContent>
-        </IonPage>
-      );
-
-}
-
 export default observer(Tchat);
-
