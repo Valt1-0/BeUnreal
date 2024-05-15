@@ -1,9 +1,6 @@
 // TODO: Add SDKs for Firebase products that you want to use
 // https://firebase.google.com/docs/web/setup#available-libraries
 
-// Your web app's Firebase configuration
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
-
 import { initializeApp } from "firebase/app";
 import {
   getAuth,
@@ -23,7 +20,12 @@ import {
   deleteDoc,
   getDocs,
   DocumentReference,
-  serverTimestamp
+  serverTimestamp,
+  query,
+  where,
+  onSnapshot,
+  orderBy,
+  limit,
 } from "firebase/firestore";
 import {
   getStorage,
@@ -91,12 +93,12 @@ export const registerUser = (userInfo: UserInfo) => {
   ).then((newUser) => {
     let { email, username } = userInfo;
 
-return setDoc(doc(db, "users", newUser.user.uid), {
-  email,
-  username,
-}).then(() => {
-  return { ...newUser.user, username };
-});
+    return setDoc(doc(db, "users", newUser.user.uid), {
+      email,
+      username,
+    }).then(() => {
+      return { ...newUser.user, username };
+    });
   });
 };
 
@@ -226,13 +228,12 @@ interface Message {
   senderId: string;
   content: string;
   timestamp: typeof serverTimestamp;
-  type: 'text' | 'image' | 'voice';
+  type: "text" | "image" | "voice";
 }
 
 interface Chat {
   participants: string[];
 }
-
 
 export const sendMessage = async (chatId: string, message: Message) => {
   const messageRef = collection(db, `chats/${chatId}/messages`);
@@ -243,16 +244,14 @@ export const sendMessage = async (chatId: string, message: Message) => {
 };
 
 export const createChat = async (participants: string[]) => {
-  const chatRef = collection(db, 'chats');
+  const chatRef = collection(db, "chats");
   return await addDoc(chatRef, { participants });
 };
 
-import { query, where, onSnapshot, orderBy, limit, collectionGroup } from "firebase/firestore";
-
 export const getChats = (userId: string, callback: (chats: any[]) => void) => {
   const chatsRef = query(
-    collection(db, 'chats'),
-    where('participants', 'array-contains', userId)
+    collection(db, "chats"),
+    where("participants", "array-contains", userId)
   );
 
   return onSnapshot(chatsRef, (snapshot) => {
@@ -265,10 +264,13 @@ export const getChats = (userId: string, callback: (chats: any[]) => void) => {
   });
 };
 
-export const getLatestMessage = (chatId: string, callback: (message: Message) => void) => {
+export const getLatestMessage = (
+  chatId: string,
+  callback: (message: Message) => void
+) => {
   const messagesRef = query(
     collection(db, `chats/${chatId}/messages`),
-    orderBy('timestamp', 'desc'),
+    orderBy("timestamp", "desc"),
     limit(1)
   );
 

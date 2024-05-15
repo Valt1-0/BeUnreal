@@ -42,8 +42,7 @@ const Home: React.FC = () => {
   return (
     <IonPage>
       <IonContent>
-        <Header/>
-        <div className="flex flex-col justify-center items-center">
+        <div className="h-full flex flex-col justify-center items-center">
           <p className="text-3xl text-white font-eloquiabold">
             Bienvenue {authenticatedUser?.username}
           </p>
