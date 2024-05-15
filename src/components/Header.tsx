@@ -10,21 +10,23 @@ const Header = () => {
   return (
     <IonToolbar color={"black"}>
       <div className="flex justify-around items-center">
-        <div className="w-10 h-10 flex justify-center items-center">
+         {authenticatedUser && <div className="w-10 h-10 flex justify-center items-center">
           <button>
             <FAIcons.FaUserFriends size={25} className="text-white" />
           </button>
-        </div>
+        </div>}
         <p className="text-xl text-white font-eloquiabold text-center">
           BeUnreal
         </p>
+        { authenticatedUser &&
         <div className="w-10 h-10 rounded-full flex justify-center items-center">
           <img
             className="rounded-full"
-            src={`https://robohash.org/${authenticatedUser.username}.png`}
+            src={`https://robohash.org/${authenticatedUser?.username}.png`}
             alt="avatar"
           />
         </div>
+        }
       </div>
     </IonToolbar>
   );
