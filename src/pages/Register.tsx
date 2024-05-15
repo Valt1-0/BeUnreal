@@ -1,8 +1,12 @@
 import { IonContent, IonPage, IonToast } from "@ionic/react";
 import React, { useState } from "react";
-
 import { MobXProviderContext, observer } from "mobx-react";
 import { useHistory } from "react-router";
+import { generatePassword } from "../functions/generatePassword.js";
+import * as MDIcons from "react-icons/md";
+import * as FAIcons from "react-icons/fa";
+import { set } from "mobx";
+
 const Register: React.FC = () => {
   const { store } = React.useContext(MobXProviderContext);
   const history = useHistory();
@@ -17,10 +21,18 @@ const Register: React.FC = () => {
     showErrorToast: boolean;
     errMsg: string;
   }
+  interface InfoToast {
+    showInfoToast: boolean;
+    infoMsg: string;
+  }
 
   const [errorInfo, setErrorInfo] = useState<ErrorInfo>({
     showErrorToast: false,
     errMsg: "",
+  });
+  const [infoToast, setInfoToast] = useState<InfoToast>({
+    showInfoToast: false,
+    infoMsg: "",
   });
 
   const _doCreateAccount = async () => {
@@ -102,8 +114,34 @@ const Register: React.FC = () => {
     }
   };
 
-  const handleSubmit = () => {
-    console.log("Form submitted with data:", formData);
+  const handleRegeneratePassword = () => {
+    const newPassword = generatePassword();
+    setPassword(newPassword);
+    setConfirmPassword(newPassword);
+    copyToClipboard(newPassword);
+  };
+
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard
+      .writeText(text)
+      .then(() => {
+        setInfoToast({
+          showInfoToast: true,
+          infoMsg: "Password copied to clipboard.",
+        });
+      })
+      .catch((error) => {
+        console.error("Erreur lors de la copie du mot de passe : ", error);
+      });
+  };
+
+  const [passwordVisible, setPasswordVisible] = useState(false);
+  const [confirmPasswordVisible, setConfirmPasswordVisible] = useState(false);
+  const togglePasswordVisibility = () => {
+    setPasswordVisible(!passwordVisible);
+  };
+  const toggleConfirmPasswordVisibility = () => {
+    setConfirmPasswordVisible(!confirmPasswordVisible);
   };
 
   return (
@@ -144,21 +182,62 @@ const Register: React.FC = () => {
               <p className="text-xl text-white font-eloquiabold">
                 Choisissez un mot de passe
               </p>
-              <input
-                className="bg-black mt-4 p-3 border font-eloquiabold border-white focus:border-white rounded-md shadow-sm"
-                type="password"
-                value={password}
-                onChange={handlePasswordChange}
-              />
+              <div className="relative">
+                <input
+                  className="bg-black mt-4 p-3 pl-10 pr-10 border font-eloquiabold border-white focus:border-white rounded-md shadow-sm"
+                  type={passwordVisible ? "text" : "password"}
+                  value={password}
+                  onChange={handlePasswordChange}
+                />
+                <button type="button" onClick={togglePasswordVisibility}>
+                  {passwordVisible ? (
+                    <FAIcons.FaEyeSlash
+                      size={17}
+                      color="white"
+                      className="absolute left-3 top-8"
+                    />
+                  ) : (
+                    <FAIcons.FaEye
+                      size={17}
+                      color="white"
+                      className="absolute left-3 top-8"
+                    />
+                  )}
+                </button>
+                <button type="button" onClick={handleRegeneratePassword}>
+                  <MDIcons.MdLoop
+                    size={20}
+                    color="white"
+                    className="absolute right-3 top-8"
+                  />
+                </button>
+              </div>
               <p className="text-xl text-white font-eloquiabold mt-4">
                 Confirmez votre mot de passe
               </p>
-              <input
-                className="bg-black mt-2 p-3 border font-eloquiabold border-white focus:border-white rounded-md shadow-sm"
-                type="password"
-                value={confirmPassword}
-                onChange={handleConfirmPasswordChange}
-              />
+              <div className="relative">
+                <input
+                  className="bg-black mt-4 p-3 pl-10 pr-10 border font-eloquiabold border-white focus:border-white rounded-md shadow-sm"
+                  type={confirmPasswordVisible ? "text" : "password"}
+                  value={confirmPassword}
+                  onChange={handleConfirmPasswordChange}
+                />
+                <button type="button" onClick={toggleConfirmPasswordVisibility}>
+                  {confirmPasswordVisible ? (
+                    <FAIcons.FaEyeSlash
+                      size={17}
+                      color="white"
+                      className="absolute left-3 top-8"
+                    />
+                  ) : (
+                    <FAIcons.FaEye
+                      size={17}
+                      color="white"
+                      className="absolute left-3 top-8"
+                    />
+                  )}
+                </button>
+              </div>
             </>
           )}
           <button
@@ -220,6 +299,16 @@ const Register: React.FC = () => {
             setErrorInfo({ showErrorToast: false, errMsg: "" })
           }
           message={errorInfo.errMsg}
+          duration={2000}
+        />
+        <IonToast
+          className="text-center text-lg text-white font-eloquiabold"
+          color="white"
+          isOpen={infoToast.showInfoToast}
+          onDidDismiss={() =>
+            setInfoToast({ showInfoToast: false, infoMsg: "" })
+          }
+          message={infoToast.infoMsg}
           duration={2000}
         />
       </IonContent>
