@@ -36,7 +36,6 @@ const PrivateRoutes: React.FC = () => {
         {/****** AUTH CREATE ACCOUNT */}
         <Route path="/login" component={LoginPage} exact={true} />
         <Route path="/register" component={Register} exact={true} />
-        <Route path="/tchat" component={Tchat} exact={true} />
         <Redirect to="/login" />
       </IonRouterOutlet>
     </IonReactRouter>
