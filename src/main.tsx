@@ -5,16 +5,14 @@ import { initializeApp } from "firebase/app";
 import { getAnalytics } from "firebase/analytics";
 import { StatusBar, Style } from "@capacitor/status-bar";
 import { Provider } from "mobx-react";
+import { defineCustomElements } from '@ionic/pwa-elements/loader';
 import { Store } from "./store";
-
-
-const setStatusBarStyleDark = async () => {
- // await StatusBar.setStyle({ style: Style.Dark });
-};
 
 const store = new Store();
 
-//setStatusBarStyleDark();
+
+// Call the element loader before the render call
+defineCustomElements(window);
 
 const container = document.getElementById("root");
 const root = createRoot(container!);

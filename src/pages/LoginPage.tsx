@@ -28,10 +28,10 @@ const LoginPage: React.FC = () => {
   const [email, setEmail] = useState<string>("test@test.com");
   const [password, setPassword] = useState<string>("");
 
- const [errorInfo, setErrorInfo] = useState<ErrorInfo>({
-   showErrorToast: false,
-   errMsg: "",
- });
+  const [errorInfo, setErrorInfo] = useState<ErrorInfo>({
+    showErrorToast: false,
+    errMsg: "",
+  });
 
   /**
    *
@@ -42,11 +42,9 @@ const LoginPage: React.FC = () => {
       if (r.code) {
         throw r;
       }
-      setErrorInfo( {showErrorToast: false,
-   errMsg: ""});
+      setErrorInfo({ showErrorToast: false, errMsg: "" });
 
-    return history.push("/home");
-     
+      return history.push("/home");
     } catch (e: any) {
       setErrorInfo({ showErrorToast: true, errMsg: e.message });
       return false;
@@ -55,12 +53,6 @@ const LoginPage: React.FC = () => {
 
   return (
     <IonPage>
-      <IonHeader>
-        <IonToolbar color="light">
-          <IonButtons slot="start" />
-          <IonTitle>Login</IonTitle>
-        </IonToolbar>
-      </IonHeader>
       <IonContent className="p-8">
         <IonText color="danger" className="p-8" style={{ fontWeight: "500" }}>
           {initializationError && initializationError.message}

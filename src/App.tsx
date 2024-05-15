@@ -64,7 +64,6 @@ const App: React.FC = () => {
   ) : (
     <IonApp>
       <Header />
-
       {store.authenticatedUser ? <PublicRoutes /> : <PrivateRoutes />}
     </IonApp>
   );
