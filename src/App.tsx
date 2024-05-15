@@ -21,6 +21,7 @@ import '@ionic/react/css/palettes/dark.always.css';
 
 /* Theme variables */
 import './theme/variables.css';
+import LoginPage from "./pages/LoginPage";
 
 setupIonicReact();
 
@@ -40,10 +41,7 @@ const PrivateRoutes: React.FC = () => {
 const PublicRoutes: React.FC = () => {
   return (
     <IonReactRouter>
-      <Route path="/*">
-        <Redirect to="/home" />
-      </Route>
-      <Route path="/home" component={Home} exact={true} />
+      <Route path="/home" component={Home} />
       <Route path="/tchat" component={Tchat} exact={true} />
     </IonReactRouter>
   );
