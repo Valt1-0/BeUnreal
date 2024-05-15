@@ -17,6 +17,7 @@ export class Store {
       items: observable,
       initializationError: observable,
       authenticatedUser: computed,
+      getTchats:action,
       doCheckAuth: computed,
       itemEntries: computed,
       doCreateUser: action,
@@ -26,6 +27,7 @@ export class Store {
       itemByKey: action,
       addItem: action,
       deleteItem: action,
+      doCreateChat : action,
     });
 
     this.initializeStore().then((u: any) => {
@@ -59,7 +61,7 @@ export class Store {
         });
       });
   }
-  
+
   get doCheckAuth() {
     if (firebaseService.getCurrentUser()) {
       return this.activeUser;
@@ -71,6 +73,16 @@ export class Store {
   get authenticatedUser() {
     return this.activeUser || null;
   }
+chats: any[] = [];
+
+getTchats() {
+  firebaseService.getChats(this.activeUser?.uid, (chats: any[]) => {
+    // Handle the chats data here
+    console.log(chats);
+    this.chats = chats;
+  });
+  return this.chats;
+}
 
   get itemEntries() {
     return entries(this.items);
@@ -80,7 +92,7 @@ export class Store {
     return get(this.items, _key);
   }
 
-  doLogin(_username: string, _password: string) {
+    doLogin(_username: string, _password: string) {
     if (_username.length) {
       return firebaseService
         .loginWithEmail(_username, _password)
@@ -185,6 +197,15 @@ export class Store {
         console.log(e);
         return e;
       });
+  }
+
+  async doCreateChat(_participants: string[])
+  {
+    try {
+      return await firebaseService.createChat(_participants);
+    } catch (err) {
+      return err;
+    }
   }
 }
 

@@ -21,6 +21,7 @@ import '@ionic/react/css/palettes/dark.always.css';
 /* Theme variables */
 import './theme/variables.css';
 import LoginPage from "./pages/LoginPage";
+import Tchat from "./pages/TchatPage";
 
 setupIonicReact();
 
@@ -41,8 +42,7 @@ const PublicRoutes: React.FC = () => {
   return (
     <IonReactRouter>
       <Route path="/home" component={Home} />
-      <Route path="/" render={() => <Redirect to="/home" />} />
-      <Redirect to="/home" />
+      <Route path="/tchat" component={Tchat} exact={true} />
     </IonReactRouter>
   );
 };
