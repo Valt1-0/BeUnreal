@@ -1,15 +1,6 @@
 /* For information on how to create your own theme, please see:
 http://ionicframework.com/docs/theming/ */
 
-:root {
-  --ion-color-favorite: #69bb7b;
-  --ion-color-favorite-rgb: 105, 187, 123;
-  --ion-color-favorite-contrast: #ffffff;
-  --ion-color-favorite-contrast-rgb: 255, 255, 255;
-  --ion-color-favorite-shade: #5ca56c;
-  --ion-color-favorite-tint: #78c288;
-}
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
