@@ -59,7 +59,7 @@ export class Store {
         });
       });
   }
-
+  
   get doCheckAuth() {
     if (firebaseService.getCurrentUser()) {
       return this.activeUser;

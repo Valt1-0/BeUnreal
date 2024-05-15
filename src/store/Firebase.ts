@@ -17,6 +17,7 @@ import {
   getFirestore,
   doc,
   getDoc,
+  setDoc,
   collection,
   addDoc,
   deleteDoc,
@@ -89,12 +90,12 @@ export const registerUser = (userInfo: UserInfo) => {
   ).then((newUser) => {
     let { email, username } = userInfo;
 
-    return addDoc(collection(db, "users"), {
-      email,
-      username,
-    }).then(() => {
-      return { ...newUser.user, username };
-    });
+return setDoc(doc(db, "users", newUser.user.uid), {
+  email,
+  username,
+}).then(() => {
+  return { ...newUser.user, username };
+});
   });
 };
 
