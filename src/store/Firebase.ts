@@ -23,6 +23,7 @@ import {
   deleteDoc,
   getDocs,
   DocumentReference,
+  serverTimestamp
 } from "firebase/firestore";
 import {
   getStorage,
@@ -219,4 +220,60 @@ export const uploadImage = async (blob: Blob) => {
     name: snapshot.metadata.name,
     size: snapshot.metadata.size,
   };
+};
+
+interface Message {
+  senderId: string;
+  content: string;
+  timestamp: typeof serverTimestamp;
+  type: 'text' | 'image' | 'voice';
+}
+
+interface Chat {
+  participants: string[];
+}
+
+
+export const sendMessage = async (chatId: string, message: Message) => {
+  const messageRef = collection(db, `chats/${chatId}/messages`);
+  return await addDoc(messageRef, {
+    ...message,
+    timestamp: serverTimestamp(),
+  });
+};
+
+export const createChat = async (participants: string[]) => {
+  const chatRef = collection(db, 'chats');
+  return await addDoc(chatRef, { participants });
+};
+
+import { query, where, onSnapshot, orderBy, limit, collectionGroup } from "firebase/firestore";
+
+export const getChats = (userId: string, callback: (chats: any[]) => void) => {
+  const chatsRef = query(
+    collection(db, 'chats'),
+    where('participants', 'array-contains', userId)
+  );
+
+  return onSnapshot(chatsRef, (snapshot) => {
+    const chats = snapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
+
+    callback(chats);
+  });
+};
+
+export const getLatestMessage = (chatId: string, callback: (message: Message) => void) => {
+  const messagesRef = query(
+    collection(db, `chats/${chatId}/messages`),
+    orderBy('timestamp', 'desc'),
+    limit(1)
+  );
+
+  return onSnapshot(messagesRef, (snapshot) => {
+    const message: Message = snapshot.docs[0]?.data() as Message;
+    callback(message);
+  });
 };
