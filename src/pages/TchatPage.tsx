@@ -1,4 +1,13 @@
-import { IonButton, IonContent, IonPage, IonToast } from "@ionic/react";
+import {
+  IonButton,
+  IonContent,
+  IonPage,
+  IonToast,
+  IonList,
+  IonItem,
+  IonAvatar,
+  IonLabel,
+} from "@ionic/react";
 import React, { useState, useEffect } from "react";
 
 import { MobXProviderContext, observer } from "mobx-react";
@@ -6,14 +15,13 @@ import { useHistory } from "react-router";
 
 const Tchat: React.FC = () => {
   const { store } = React.useContext(MobXProviderContext);
-  let { authenticatedUser, initializationError } = store;
-  const [tchats, setTchats] = useState<any[]>([]);
+  let { authenticatedUser, initializationError,tchats } = store;
+
 
   useEffect(() => {
     const fetchTchats = async () => {
       try {
-        const tchat = await store.getTchats();
-        console.log(tchat);
+         await store.getTchats();
       } catch (e) {
         console.error("Erreur lors de la récupération des tchats : ", e);
       }
@@ -30,8 +38,37 @@ const Tchat: React.FC = () => {
     <IonPage>
       <IonContent>
         <div className="h-full flex flex-col justify-center items-center">
-          <p className="text-3xl text-white font-eloquiabold">Bienvenue</p>
           <IonButton onClick={handleCreateTchat}>Create tchat</IonButton>
+          <IonList>
+            {tchats.map((tchat: any) => (
+              <IonItem
+                key={tchat.id}
+                lines="none"
+                routerLink={`/tchat/${tchat.id}`}
+              >
+                <IonAvatar slot="start">
+                  <img
+                    src={
+                      tchat.avatarUrl
+                        ? tchat.avatarUrl
+                        : `https://robohash.org/${authenticatedUser.username}.png`
+                    }
+                  />
+                </IonAvatar>
+                <IonLabel
+                  style={{
+                    whiteSpace: "nowrap",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                  }}
+                >
+                  {tchat.participants
+                    .map((user: any) => user.username)
+                    .join(", ")}
+                </IonLabel>
+              </IonItem>
+            ))}
+          </IonList>
         </div>
       </IonContent>
     </IonPage>

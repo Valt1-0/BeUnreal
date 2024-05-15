@@ -15,6 +15,7 @@ import {
   doc,
   getDoc,
   setDoc,
+  updateDoc,
   collection,
   addDoc,
   deleteDoc,
@@ -64,6 +65,12 @@ export const authCheck = async (
       }
     });
   });
+};
+export const getUsers = async () => {
+  const usersRef = collection(db, "users");
+  const userSnapshot = await getDocs(usersRef);
+  const users = userSnapshot.docs.map((doc) => doc.data());
+  return users;
 };
 
 export const loginWithEmail = (email: string, password: string) => {
@@ -224,7 +231,7 @@ export const uploadImage = async (blob: Blob) => {
   };
 };
 
-interface Message {
+export interface Message {
   senderId: string;
   content: string;
   timestamp: typeof serverTimestamp;
@@ -235,6 +242,7 @@ interface ParticipantData {
   participantId: string;
   hasDeletedChat: boolean;
   lastReadMessageId: string | null;
+  deletedAt: null
 }
 
 export const sendMessage = async (chatId: string, message: Message) => {
@@ -245,23 +253,55 @@ export const sendMessage = async (chatId: string, message: Message) => {
   });
 };
 
+
 export const createChat = async (participants: string[]) => {
   const chatRef = collection(db, "chats");
-  const chatDocRef = await addDoc(chatRef, { participants });
 
-  const participantDataRef = collection(chatDocRef, "participantData");
-  participants.forEach(async (participant) => {
-    await addDoc(participantDataRef, {
-      participantId: participant,
-      hasDeletedChat: false,
-      lastReadMessageId: null,
+  // Requête pour trouver un chat existant avec les mêmes participants
+  const q = query(chatRef, where("participants", "==", participants));
+  const querySnapshot = await getDocs(q);
+
+  let chatDocRef;
+  if (!querySnapshot.empty) {
+    // Le chat existe déjà
+    chatDocRef = querySnapshot.docs[0].ref;
+
+    // Vérifiez si l'utilisateur a supprimé le chat
+    const participantDataRef = collection(chatDocRef, "participantData");
+    const participantDataSnapshot = await getDocs(participantDataRef);
+    participantDataSnapshot.docs.forEach(async (doc) => {
+      if (doc.data().hasDeletedChat) {
+        // Si l'utilisateur a supprimé le chat, mettez à jour l'état
+        await updateDoc(doc.ref, { hasDeletedChat: false });
+      }
     });
-  });
+  } else {
+    // Le chat n'existe pas, créez-en un nouveau
+    chatDocRef = await addDoc(chatRef, { participants });
+
+    const participantDataRef = collection(chatDocRef, "participantData");
+    participants.forEach(async (participant) => {
+      await addDoc(participantDataRef, {
+        participantId: participant,
+        hasDeletedChat: false,
+        lastReadMessageId: null,
+      });
+    });
+  }
 
   return chatDocRef;
 };
+interface Tchat {
+  id: string;
+  participants: any[];
+  latestMessage?: any;
+  [key: string]: any;
+}
 
-export const getChats = (userId: string, callback: (chats: any[]) => void) => {
+export const getChats = async (
+  userId: string,
+  callback: (chats: any[]) => void
+) => {
   const chatsRef = query(
     collection(db, "chats"),
     where("participants", "array-contains", userId)
@@ -277,16 +317,70 @@ export const getChats = (userId: string, callback: (chats: any[]) => void) => {
       const participantDataSnapshot = await getDoc(participantDataRef);
       const participantData = participantDataSnapshot.data() as ParticipantData;
       if (!participantData?.hasDeletedChat) {
-        chats.push({
+        const tchat: Tchat = {
           id: chatDoc.id,
+          participants: [],
           ...chatDoc.data(),
+        };
+
+        // Récupérer les informations des participants
+        tchat.participants = await Promise.all(
+          tchat.participants.map(async (participantId: string) => {
+            const userRef = doc(db, "users", participantId);
+            const userSnapshot = await getDoc(userRef);
+            const userData = userSnapshot.data();
+            return { uid: participantId, ...userData };
+          })
+        );
+
+        // Récupérer le dernier message du chat
+        getLatestMessage(chatDoc.id, (message) => {
+          tchat.latestMessage = message;
         });
+        chats.push(tchat);
       }
     }
 
     callback(chats);
   });
 };
+
+export const getMessages = async (
+  chatId: string,
+  userId: string,
+  callback: (messages: any[]) => void
+) => {
+  const participantDataRef = doc(
+    db,
+    `chats/${chatId}/participantData/${userId}`
+  );
+  const participantDataSnapshot = await getDoc(participantDataRef);
+  const deletedAt = participantDataSnapshot.data()?.deletedAt;
+
+let messagesRef;
+if (deletedAt) {
+  messagesRef = query(
+    collection(db, `chats/${chatId}/messages`),
+    where("timestamp", ">", deletedAt),
+    orderBy("timestamp", "desc")
+  );
+} else {
+  messagesRef = query(
+    collection(db, `chats/${chatId}/messages`),
+    orderBy("timestamp", "desc")
+  );
+}
+
+  return onSnapshot(messagesRef, (snapshot) => {
+    const messages = snapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
+
+    callback(messages);
+  });
+};
+
 
 export const getLatestMessage = (
   chatId: string,

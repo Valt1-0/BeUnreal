@@ -1,25 +1,39 @@
-import { observable, computed, action, makeObservable, runInAction } from "mobx";
+import {
+  observable,
+  computed,
+  action,
+  makeObservable,
+  runInAction,
+} from "mobx";
 import { get, set, entries, remove } from "mobx";
 import * as firebaseService from "./Firebase";
-
+import { serverTimestamp } from "firebase/firestore";
 export class Store {
   activeUser: any = null;
   loading: boolean = false;
   authCheckComplete: boolean = false;
   items: Map<any, any> = new Map();
   initializationError: any = null;
+  users: any[] = []; // Ajoutez cette ligne
+  tchats: any[] = [];
+  tchatMessages: any[] = [];
 
   constructor() {
-       makeObservable(this, {
+    makeObservable(this, {
       activeUser: observable,
       loading: observable,
       authCheckComplete: observable,
       items: observable,
       initializationError: observable,
+      users: observable,
+      tchats: observable,
+      tchatMessages: observable,
       authenticatedUser: computed,
-      getTchats:action,
       doCheckAuth: computed,
       itemEntries: computed,
+      getTchatMessages: action,
+      getTchats: action,
+      getUsers: action,
       doCreateUser: action,
       doLogin: action,
       doLogout: action,
@@ -27,9 +41,11 @@ export class Store {
       itemByKey: action,
       addItem: action,
       deleteItem: action,
-      doCreateChat : action,
+      doCreateChat: action,
+      doSendMessage: action,
     });
 
+    this.getUsers = this.getUsers.bind(this);
     this.initializeStore().then((u: any) => {
       this.activeUser = u;
       this.authCheckComplete = true;
@@ -70,29 +86,49 @@ export class Store {
     }
   }
 
+  getTchatMessages(_chatId: string, _userID: string) {
+    return firebaseService.getMessages(_chatId, _userID, (messages: any[]) => {
+      console.log(messages);
+      runInAction(() => {
+        this.tchatMessages = messages;
+      });
+    });
+  }
   get authenticatedUser() {
     return this.activeUser || null;
   }
-chats: any[] = [];
-
-getTchats() {
-  firebaseService.getChats(this.activeUser?.uid, (chats: any[]) => {
-    // Handle the chats data here
-    console.log(chats);
-    this.chats = chats;
-  });
-  return this.chats;
-}
+  getTchats() {
+    firebaseService.getChats(this.activeUser?.uid, (chats: any[]) => {
+      // Handle the chats data here
+      console.log(chats);
+      runInAction(() => {
+        this.tchats = chats;
+      });
+    });
+    return this.tchats;
+  }
 
   get itemEntries() {
     return entries(this.items);
   }
 
+  async getUsers() {
+    try {
+      const users = await firebaseService.getUsers();
+      runInAction(() => {
+        this.users = users;
+      });
+      return users;
+    } catch (error) {
+      console.error("Error getting users: ", error);
+      return null;
+    }
+  }
   itemByKey(_key: any) {
     return get(this.items, _key);
   }
 
-    doLogin(_username: string, _password: string) {
+  doLogin(_username: string, _password: string) {
     if (_username.length) {
       return firebaseService
         .loginWithEmail(_username, _password)
@@ -199,11 +235,19 @@ getTchats() {
       });
   }
 
-  async doCreateChat(_participants: string[])
-  {
+  async doCreateChat(_participants: string[]) {
     try {
       return await firebaseService.createChat(_participants);
     } catch (err) {
+      return err;
+    }
+  }
+
+  async doSendMessage(_chatId: string, _message: firebaseService.Message) {
+    try {
+      return await firebaseService.sendMessage(_chatId, _message);
+    } catch (err) {
+      console.log(err);
       return err;
     }
   }
