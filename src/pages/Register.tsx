@@ -1,4 +1,4 @@
-import { IonContent, IonPage, IonToast } from "@ionic/react";
+import { IonContent, IonPage, IonToast, IonToolbar } from "@ionic/react";
 import React, { useState } from "react";
 import { MobXProviderContext, observer } from "mobx-react";
 import { useHistory } from "react-router";
@@ -147,9 +147,11 @@ const Register: React.FC = () => {
   return (
     <IonPage>
       <IonContent>
-        <p className="text-xl text-white font-eloquiabold text-center mt-4">
-          BeUnreal
-        </p>
+        <IonToolbar>
+          <p className="text-xl text-white font-eloquiabold text-center mt-4">
+            BeUnreal
+          </p>
+        </IonToolbar>
         <div className="w-auto h-auto flex flex-col items-center justify-center mt-20">
           {currentStep === 1 && (
             <>

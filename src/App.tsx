@@ -4,6 +4,7 @@ import { IonApp, IonRouterOutlet, setupIonicReact,IonLoading } from "@ionic/reac
 import { IonReactRouter } from "@ionic/react-router";
 import Home from "./pages/Home";
 import Register from "./pages/Register";
+import LoginPage from "./pages/LoginPage";
 
 import { observer, MobXProviderContext } from "mobx-react";
 
@@ -20,7 +21,6 @@ import '@ionic/react/css/palettes/dark.always.css';
 
 /* Theme variables */
 import './theme/variables.css';
-import LoginPage from "./pages/LoginPage";
 
 setupIonicReact();
 
@@ -40,9 +40,11 @@ const PrivateRoutes: React.FC = () => {
 const PublicRoutes: React.FC = () => {
   return (
     <IonReactRouter>
-      <Route path="/home" component={Home} />
-      <Route path="/" render={() => <Redirect to="/home" />} />
-      <Redirect to="/home" />
+      <Route path="/*">
+        <Redirect to="/home" />
+      </Route>
+      <Route path="/home" component={Home} exact={true} />
+      <Route path="/tchat" component={Tchat} exact={true} />
     </IonReactRouter>
   );
 };
