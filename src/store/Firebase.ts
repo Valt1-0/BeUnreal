@@ -23,7 +23,12 @@ import {
   deleteDoc,
   getDocs,
   DocumentReference,
-  serverTimestamp
+  serverTimestamp,
+  query,
+  where,
+  onSnapshot,
+  orderBy,
+  limit,
 } from "firebase/firestore";
 import {
   getStorage,
@@ -91,12 +96,12 @@ export const registerUser = (userInfo: UserInfo) => {
   ).then((newUser) => {
     let { email, username } = userInfo;
 
-return setDoc(doc(db, "users", newUser.user.uid), {
-  email,
-  username,
-}).then(() => {
-  return { ...newUser.user, username };
-});
+    return setDoc(doc(db, "users", newUser.user.uid), {
+      email,
+      username,
+    }).then(() => {
+      return { ...newUser.user, username };
+    });
   });
 };
 
@@ -226,13 +231,14 @@ interface Message {
   senderId: string;
   content: string;
   timestamp: typeof serverTimestamp;
-  type: 'text' | 'image' | 'voice';
+  type: "text" | "image" | "voice";
 }
 
-interface Chat {
-  participants: string[];
+interface ParticipantData {
+  participantId: string;
+  hasDeletedChat: boolean;
+  lastReadMessageId: string | null;
 }
-
 
 export const sendMessage = async (chatId: string, message: Message) => {
   const messageRef = collection(db, `chats/${chatId}/messages`);
@@ -243,32 +249,55 @@ export const sendMessage = async (chatId: string, message: Message) => {
 };
 
 export const createChat = async (participants: string[]) => {
-  const chatRef = collection(db, 'chats');
-  return await addDoc(chatRef, { participants });
-};
+  const chatRef = collection(db, "chats");
+  const chatDocRef = await addDoc(chatRef, { participants });
 
-import { query, where, onSnapshot, orderBy, limit, collectionGroup } from "firebase/firestore";
+  const participantDataRef = collection(chatDocRef, "participantData");
+  participants.forEach(async (participant) => {
+    await addDoc(participantDataRef, {
+      participantId: participant,
+      hasDeletedChat: false,
+      lastReadMessageId: null,
+    });
+  });
+
+  return chatDocRef;
+};
 
 export const getChats = (userId: string, callback: (chats: any[]) => void) => {
   const chatsRef = query(
-    collection(db, 'chats'),
-    where('participants', 'array-contains', userId)
+    collection(db, "chats"),
+    where("participants", "array-contains", userId)
   );
 
-  return onSnapshot(chatsRef, (snapshot) => {
-    const chats = snapshot.docs.map((doc) => ({
-      id: doc.id,
-      ...doc.data(),
-    }));
+  return onSnapshot(chatsRef, async (snapshot) => {
+    const chats = [];
+    for (let chatDoc of snapshot.docs) {
+      const participantDataRef = doc(
+        db,
+        `chats/${chatDoc.id}/participantData/${userId}`
+      );
+      const participantDataSnapshot = await getDoc(participantDataRef);
+      const participantData = participantDataSnapshot.data() as ParticipantData;
+      if (!participantData?.hasDeletedChat) {
+        chats.push({
+          id: chatDoc.id,
+          ...chatDoc.data(),
+        });
+      }
+    }
 
     callback(chats);
   });
 };
 
-export const getLatestMessage = (chatId: string, callback: (message: Message) => void) => {
+export const getLatestMessage = (
+  chatId: string,
+  callback: (message: Message) => void
+) => {
   const messagesRef = query(
     collection(db, `chats/${chatId}/messages`),
-    orderBy('timestamp', 'desc'),
+    orderBy("timestamp", "desc"),
     limit(1)
   );
 
@@ -276,4 +305,16 @@ export const getLatestMessage = (chatId: string, callback: (message: Message) =>
     const message: Message = snapshot.docs[0]?.data() as Message;
     callback(message);
   });
+};
+
+export const deleteChatForUser = async (chatId: string, userId: string) => {
+  const participantDataRef = doc(
+    db,
+    `chats/${chatId}/participantData/${userId}`
+  );
+  await setDoc(
+    participantDataRef,
+    { deletedAt: serverTimestamp() },
+    { merge: true }
+  );
 };
