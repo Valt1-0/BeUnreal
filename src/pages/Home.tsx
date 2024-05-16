@@ -13,11 +13,10 @@ import {
 } from "@ionic/react";
 import { MobXProviderContext } from "mobx-react";
 import * as FAIcons from "react-icons/fa";
-import * as FAIcons from "react-icons/fa";
 
 const Home: React.FC = () => {
-    const { store } = React.useContext(MobXProviderContext);
-    let { authenticatedUser } = store;
+  const { store } = React.useContext(MobXProviderContext);
+  let { authenticatedUser } = store;
   const [imageData, setImageData] = useState("");
 
   const cameraPreviewOptions: CameraPreviewOptions = {
