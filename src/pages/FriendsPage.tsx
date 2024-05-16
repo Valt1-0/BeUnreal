@@ -12,6 +12,9 @@ import {
   IonLabel,
   IonButtons,
   IonIcon,
+  IonFooter,
+  IonSegment,
+  IonSegmentButton,
 } from "@ionic/react";
 import { arrowForward } from "ionicons/icons";
 interface User {
@@ -20,7 +23,7 @@ interface User {
   avatar: string;
 }
 
-import { MobXProviderContext,observer } from "mobx-react";
+import { MobXProviderContext, observer } from "mobx-react";
 
 const users: User[] = [
   // Remplissez cette liste avec vos utilisateurs
@@ -28,16 +31,31 @@ const users: User[] = [
 
 const FriendsPage: React.FC = () => {
   const { store } = React.useContext(MobXProviderContext);
-  let { authenticatedUser,users } = store;
+  let { authenticatedUser, users, usersNotFollowed, followingUsers } = store;
   const [searchTerm, setSearchTerm] = useState("");
+  const [selectedSegment, setSelectedSegment] = useState("suggestions");
 
-useEffect(() => {
-  const FetchAllUser = async () => {
-    await store.getUsers(searchTerm);
+  const handleSegmentChange = (event: CustomEvent) => {
+    setSelectedSegment(event.detail.value);
   };
-  FetchAllUser();
-}, [searchTerm]);
 
+  useEffect(() => {
+    const FetchAllUser = async () => {
+      await store.doGetUsersNotFollowed();
+    };
+    FetchAllUser();
+  }, [selectedSegment == "suggestions", searchTerm]);
+
+  useEffect(() => {
+    const FetchAllUser = async () => {
+      await store.doGetFollowingUsers();
+    };
+    FetchAllUser();
+  }, [selectedSegment == "friends"]);
+
+  const handleFollowUser = async (user: User) => {
+    await store.doFollowUser(user);
+  };
 
   return (
     <IonPage>
@@ -51,24 +69,66 @@ useEffect(() => {
         </IonToolbar>
       </IonHeader>
       <IonContent scrollY={false}>
-        <IonInput
-          value={searchTerm}
-          onInput={(e: any) => setSearchTerm(e.detail.value!) }
-          placeholder="Search by username"
-          type="text"
-        />
-        <IonList>
-          {users.map((user : any) => (
-            <IonItem key={user.id}>
-              <IonAvatar slot="start">
-                <img src={user.avatar} />
-              </IonAvatar>
-              <IonLabel>{user.username}</IonLabel>
-              <IonButton slot="end">Add</IonButton>
-            </IonItem>
-          ))}
-        </IonList>
+        {selectedSegment == "suggestions" && (
+          <>
+            <IonInput
+              value={searchTerm}
+              onInput={(e: any) => setSearchTerm(e.detail.value!)}
+              placeholder="Search by username"
+              type="text"
+            />
+            <IonList>
+              {usersNotFollowed.map((user: any) => (
+                <IonItem key={user.uid}>
+                  <IonAvatar slot="start">
+                    <img src={user.avatar} />
+                  </IonAvatar>
+                  <IonLabel>{user.username}</IonLabel>
+                  <IonButton
+                    fill="clear"
+                    className="border rounded text-white w-1/4"
+                    slot="end"
+                    onClick={() => {
+                      handleFollowUser(user.uid);
+                    }}
+                  >
+                    Add
+                  </IonButton>
+                </IonItem>
+              ))}
+            </IonList>
+          </>
+        )}
+        {selectedSegment == "friends" && (
+            <IonList>
+              {followingUsers.map((user: any) => (
+                <IonItem key={user.uid}>
+                  <IonAvatar slot="start">
+                    <img src={user.avatar} />
+                  </IonAvatar>
+                  <IonLabel>{user.username}</IonLabel>
+                </IonItem>
+              ))}
+            </IonList>
+            )}
       </IonContent>
+      <IonFooter className="flex w-[95%] bottom-4 justify-center items-center mx-auto">
+        <IonSegment
+          className="flex justify-around w-full"
+          onIonChange={handleSegmentChange}
+          value={selectedSegment}
+        >
+          <IonSegmentButton value="suggestions">
+            <IonLabel>Suggestions</IonLabel>
+          </IonSegmentButton>
+          <IonSegmentButton value="friends">
+            <IonLabel>Amis</IonLabel>
+          </IonSegmentButton>
+          <IonSegmentButton value="requests">
+            <IonLabel>Demandes</IonLabel>
+          </IonSegmentButton>
+        </IonSegment>
+      </IonFooter>
     </IonPage>
   );
 };
