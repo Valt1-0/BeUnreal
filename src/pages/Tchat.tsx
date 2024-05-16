@@ -15,6 +15,7 @@ const Tchat: React.FC = () => {
   const { authenticatedUser, tchatMessages } = store;
   const [imageFile, setImageFile] = useState<File | null>(null);
  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+const fileInput = React.useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     const fetchTchatMessage = async () => {
@@ -67,6 +68,10 @@ const Tchat: React.FC = () => {
     try {
       await store.doSendMessage(id, newMessage,imageFile);
       setMessage("");
+      setImageFile(null);
+     if (fileInput.current) {
+       fileInput.current.value = "";
+     }
     } catch (err) {
       console.error(err);
     }
@@ -127,8 +132,13 @@ const Tchat: React.FC = () => {
               )
             )}
           </div>
-          <div className="flex items-center py-20">
-            <input type="file" accept="image/*" onChange={handleFileChange} />
+          <div className="flex items-center py-20" id="form">
+            <input
+              type="file"
+              accept="image/*"
+              onChange={handleFileChange}
+              ref={fileInput}
+            />
             <input
               placeholder="Enter Message"
               className="mx-4 text-white border-2 border-white font-eloquiabold p-2 rounded-lg"
