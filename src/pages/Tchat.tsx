@@ -147,11 +147,11 @@ const Tchat: React.FC = () => {
         {selectedImage && (
           <div className="fixed inset-0 flex items-center justify-center z-50">
             <div className="fixed inset-0 bg-black opacity-100"></div>
-            <div className="bg-white p-4 rounded-lg relative">
+            <div className="bg-white p-4 rounded-lg relative max-w-full max-h-full">
               <img
                 src={selectedImage}
                 alt="Selected content"
-                className="max-w-full h-auto"
+                className="max-w-full h-auto object-contain"
               />
               <IonButton
                 className="text-white absolute top-0 left-0 m-2"
