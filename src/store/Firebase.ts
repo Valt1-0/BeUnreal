@@ -357,25 +357,35 @@ export const getMessages = async (
   const participantDataSnapshot = await getDoc(participantDataRef);
   const deletedAt = participantDataSnapshot.data()?.deletedAt;
 
-let messagesRef;
-if (deletedAt) {
-  messagesRef = query(
-    collection(db, `chats/${chatId}/messages`),
-    where("timestamp", ">", deletedAt),
-    orderBy("timestamp", "desc")
-  );
-} else {
-  messagesRef = query(
-    collection(db, `chats/${chatId}/messages`),
-    orderBy("timestamp", "desc")
-  );
-}
+  let messagesRef;
+  if (deletedAt) {
+    messagesRef = query(
+      collection(db, `chats/${chatId}/messages`),
+      where("timestamp", ">", deletedAt),
+      orderBy("timestamp", "desc")
+    );
+  } else {
+    messagesRef = query(
+      collection(db, `chats/${chatId}/messages`),
+      orderBy("timestamp", "desc")
+    );
+  }
 
-  return onSnapshot(messagesRef, (snapshot) => {
-    const messages = snapshot.docs.map((doc) => ({
-      id: doc.id,
-      ...doc.data(),
-    }));
+  return onSnapshot(messagesRef, async (snapshot) => {
+    const messages = await Promise.all(
+      snapshot.docs.map(async (fetchdoc) => {
+        const messageData = fetchdoc.data();
+        const userDocRef = doc(db, `users/${messageData.senderId}`);
+        const userSnapshot = await getDoc(userDocRef);
+        const userData = userSnapshot.data();
+
+        return {
+          id: fetchdoc.id,
+          ...messageData,
+          username: userData?.username, // ou toute autre information de l'utilisateur que vous voulez inclure
+        };
+      })
+    );
 
     callback(messages);
   });

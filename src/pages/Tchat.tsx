@@ -6,6 +6,9 @@ import { Message } from "../store/Firebase";
 import { serverTimestamp } from "firebase/firestore";
 
 const Tchat: React.FC = () => {
+  interface MessageWithUsername extends Message {
+    username?: string;
+  }
   const { id } = useParams<{ id: string }>();
   const [message, setMessage] = useState("");
   const { store } = React.useContext(MobXProviderContext);
@@ -60,7 +63,7 @@ const Tchat: React.FC = () => {
         <div className="h-full flex flex-col justify-center items-center">
           <div className="w-screen overflow-y-scroll">
             {sortMessagesByTimestamp(tchatMessages).map(
-              (msg: Message, index: number) => (
+              (msg: MessageWithUsername, index: number) => (
                 <div
                   key={index}
                   className={`flex flex-col items-${
@@ -85,7 +88,7 @@ const Tchat: React.FC = () => {
                     <div className="chat-header">
                       {msg.senderId === authenticatedUser.uid
                         ? "You"
-                        : "Other User"}
+                        : msg?.username}
                     </div>
                     <div className="chat-bubble">{msg.content}</div>
                     <div className="chat-footer">
