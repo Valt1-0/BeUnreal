@@ -26,6 +26,8 @@ import {
   where,
   onSnapshot,
   orderBy,
+  startAt,
+  endAt,
   limit,
 } from "firebase/firestore";
 import {
@@ -66,10 +68,27 @@ export const authCheck = async (
     });
   });
 };
-export const getUsers = async () => {
+export const getUsers = async (username?: string) => {
   const usersRef = collection(db, "users");
-  const userSnapshot = await getDocs(usersRef);
-  const users = userSnapshot.docs.map((doc) => doc.data());
+  let q;
+
+  if (username) {
+    q = query(
+      usersRef,
+      orderBy("username"),
+      startAt(username),
+      endAt(username + "\uf8ff")
+    );
+  } else {
+    q = usersRef;
+  }
+
+  const userSnapshot = await getDocs(q);
+  const users = userSnapshot.docs.map((doc) => ({
+    uid: doc.id,
+    ...doc.data(),
+  }));
+  console.log("users: ", users);
   return users;
 };
 
@@ -242,7 +261,7 @@ interface ParticipantData {
   participantId: string;
   hasDeletedChat: boolean;
   lastReadMessageId: string | null;
-  deletedAt: null
+  deletedAt: null;
 }
 
 export const sendMessage = async (
@@ -260,9 +279,9 @@ export const sendMessage = async (
       uploadTask.on(
         "state_changed",
         (snapshot) => {
-           const progress =
-             (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-           console.log(`Upload is ${progress}% done`);
+          const progress =
+            (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+          console.log(`Upload is ${progress}% done`);
         },
         (error) => {
           // Handle unsuccessful uploads
@@ -285,7 +304,6 @@ export const sendMessage = async (
     timestamp: new Timestamp(Date.now() / 1000, 0),
   });
 };
-
 
 export const createChat = async (participants: string[]) => {
   const chatRef = collection(db, "chats");
@@ -424,14 +442,13 @@ export const getMessages = async (
   });
 };
 
-
 export const getLatestMessage = (
   chatId: string,
   callback: (message: Message) => void
 ) => {
   const messagesRef = query(
     collection(db, `chats/${chatId}/messages`),
-    orderBy('timestamp', 'desc'),
+    orderBy("timestamp", "desc"),
     limit(1)
   );
 
@@ -439,4 +456,57 @@ export const getLatestMessage = (
     const message: Message = snapshot.docs[0]?.data() as Message;
     callback(message);
   });
+};
+
+export const addFriend = async (
+  currentUserId: string,
+  friendUserId: string
+) => {
+  // Ajouter friendUserId à la liste des personnes suivies par currentUserId
+  await setDoc(
+    doc(collection(db, "users", currentUserId, "following"), friendUserId),
+    {}
+  );
+
+  // Ajouter currentUserId à la liste des followers de friendUserId
+  await setDoc(
+    doc(collection(db, "users", friendUserId, "followers"), currentUserId),
+    {}
+  );
+};
+
+export const getFollowing = async (userId: string) => {
+  const followingSnapshot = await getDocs(
+    collection(db, "users", userId, "following")
+  );
+
+  const following = await Promise.all(
+    followingSnapshot.docs.map(async (docFollow) => {
+      const userSnapshot = await getDoc(doc(db, "users", docFollow.id));
+      const userData = userSnapshot.data();
+      const username = userData?.username || "";
+
+      return {
+        uid: docFollow.id,
+        username: username,
+      };
+    })
+  );
+
+  console.log(following);
+  return following;
+};
+
+export const getUsersNotFollowed = async (currentUserId: string) => {
+  const allUsers = await getUsers();
+  const followingUsers: { uid: string; username: any }[] = await getFollowing(
+    currentUserId
+  );
+  const notFollowedUsers = allUsers.filter(
+    (user) =>
+      !followingUsers.some((followingUser) => followingUser.uid === user.uid) &&
+      user.uid !== currentUserId
+  );
+
+  return notFollowedUsers;
 };

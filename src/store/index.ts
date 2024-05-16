@@ -14,9 +14,11 @@ export class Store {
   authCheckComplete: boolean = false;
   items: Map<any, any> = new Map();
   initializationError: any = null;
-  users: any[] = []; // Ajoutez cette ligne
+  users: any[] = [];
+  usersNotFollowed: any[] = [];
   tchats: any[] = [];
   tchatMessages: any[] = [];
+  followingUsers: any[] = [];
 
   constructor() {
     makeObservable(this, {
@@ -28,6 +30,8 @@ export class Store {
       users: observable,
       tchats: observable,
       tchatMessages: observable,
+      usersNotFollowed: observable,
+      followingUsers: observable,
       authenticatedUser: computed,
       doCheckAuth: computed,
       itemEntries: computed,
@@ -43,6 +47,9 @@ export class Store {
       deleteItem: action,
       doCreateChat: action,
       doSendMessage: action,
+      doGetUsersNotFollowed: action,
+      doFollowUser: action,
+      doGetFollowingUsers: action,
     });
 
     this.getUsers = this.getUsers.bind(this);
@@ -112,9 +119,10 @@ export class Store {
     return entries(this.items);
   }
 
-  async getUsers() {
+  async getUsers(username?: string) {
     try {
-      const users = await firebaseService.getUsers();
+      const users = await firebaseService.getUsers(username);
+      console.log("userss :", users);
       runInAction(() => {
         this.users = users;
       });
@@ -243,12 +251,56 @@ export class Store {
     }
   }
 
-  async doSendMessage(_chatId: string, _message: firebaseService.Message,_imageFile : File) {
+  async doSendMessage(
+    _chatId: string,
+    _message: firebaseService.Message,
+    _imageFile: File
+  ) {
     try {
       return await firebaseService.sendMessage(_chatId, _message, _imageFile);
     } catch (err) {
       console.log(err);
       return err;
+    }
+  }
+
+  async doGetUsersNotFollowed() {
+    try {
+      const users = await firebaseService.getUsersNotFollowed(
+        this.activeUser.uid
+      );
+
+      runInAction(() => {
+        this.usersNotFollowed = users;
+      });
+      return users;
+    } catch (err) {
+      console.error("Error getting users: ", err);
+      return null;
+    }
+  }
+
+  async doFollowUser(_userId: string) {
+    try {
+      await firebaseService.addFriend(this.activeUser.uid, _userId);
+      return true;
+    } catch (err) {
+      console.error("Error following user: ", err);
+      return false;
+    }
+  }
+
+  async doGetFollowingUsers(_userId?: string) {
+    const useruid = _userId || this.activeUser.uid;
+    try {
+      const users = await firebaseService.getFollowing(useruid);
+      runInAction(() => {
+        this.followingUsers = users;
+      });
+      return users;
+    } catch (err) {
+      console.error("Error to get following user: ", err);
+      return null;
     }
   }
 }
