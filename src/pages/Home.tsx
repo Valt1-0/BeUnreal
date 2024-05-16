@@ -18,6 +18,7 @@ const Home: React.FC = () => {
   const { store } = React.useContext(MobXProviderContext);
   let { authenticatedUser } = store;
   const [imageData, setImageData] = useState("");
+  const [isCameraRunning, setIsCameraRunning] = useState(false);
 
   const cameraPreviewOptions: CameraPreviewOptions = {
     position: "rear",
@@ -25,8 +26,18 @@ const Home: React.FC = () => {
     width: 1080,
     lockAndroidOrientation: true,
   };
+console.log("imageData ", imageData);
+  useEffect(() => {
+    CameraPreview.start(cameraPreviewOptions).then(() => {
+      setIsCameraRunning(true);
+    });
 
-  CameraPreview.start(cameraPreviewOptions);
+    return () => {
+      CameraPreview.stop().then(() => {
+        setIsCameraRunning(false);
+      });
+    };
+  }, []);
 
   return (
     <IonPage>
@@ -72,9 +83,11 @@ const Home: React.FC = () => {
             <button
               className="w-16 h-16 rounded-full flex justify-center items-center border border-white bg-transparent"
               onClick={() => {
-                CameraPreview.capture({ quality: 100 }).then((result) => {
-                  setImageData(result.value);
-                });
+                if (isCameraRunning) {
+                  CameraPreview.capture({ quality: 100 }).then((result) => {
+                    setImageData(result.value);
+                  });
+                }
               }}
             >
               <FAIcons.FaCamera size={28} className="text-white" />{" "}
