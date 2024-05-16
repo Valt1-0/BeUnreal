@@ -43,7 +43,6 @@ const Tchat: React.FC = () => {
     const newMessage: Message = {
       senderId: authenticatedUser.uid,
       content: message,
-      timestamp: serverTimestamp(),
       type: "text",
     };
 

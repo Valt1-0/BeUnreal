@@ -21,7 +21,7 @@ import {
   deleteDoc,
   getDocs,
   DocumentReference,
-  serverTimestamp,
+  Timestamp,
   query,
   where,
   onSnapshot,
@@ -234,7 +234,7 @@ export const uploadImage = async (blob: Blob) => {
 export interface Message {
   senderId: string;
   content: string;
-  timestamp: typeof serverTimestamp;
+  timestamp?: Timestamp | null;
   type: "text" | "image" | "voice";
 }
 
@@ -249,7 +249,7 @@ export const sendMessage = async (chatId: string, message: Message) => {
   const messageRef = collection(db, `chats/${chatId}/messages`);
   return await addDoc(messageRef, {
     ...message,
-    timestamp: serverTimestamp(),
+    timestamp: new Timestamp(Date.now() / 1000, 0),
   });
 };
 
