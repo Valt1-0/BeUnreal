@@ -13,6 +13,8 @@ const Tchat: React.FC = () => {
   const [message, setMessage] = useState("");
   const { store } = React.useContext(MobXProviderContext);
   const { authenticatedUser, tchatMessages } = store;
+  const [imageFile, setImageFile] = useState<File | null>(null);
+ const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchTchatMessage = async () => {
@@ -24,6 +26,19 @@ const Tchat: React.FC = () => {
   useEffect(() => {
     console.log("message : ", message);
   }, [message]);
+
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+      if (e.target.files && e.target.files[0]) {
+        setImageFile(e.target.files[0]);
+      }
+    };
+  const handleImageClick = (imageUrl: string) => {
+    setSelectedImage(imageUrl);
+  };
+
+  const handleCloseModal = () => {
+    setSelectedImage(null);
+  };
 
   // Fonction pour trier les messages par timestamp
   const sortMessagesByTimestamp = (messages: Message[]) => {
@@ -46,11 +61,11 @@ const Tchat: React.FC = () => {
     const newMessage: Message = {
       senderId: authenticatedUser.uid,
       content: message,
-      type: "text",
+      type: imageFile ? "image" : "text",
     };
 
     try {
-      await store.doSendMessage(id, newMessage);
+      await store.doSendMessage(id, newMessage,imageFile);
       setMessage("");
     } catch (err) {
       console.error(err);
@@ -90,7 +105,18 @@ const Tchat: React.FC = () => {
                         ? "You"
                         : msg?.username}
                     </div>
-                    <div className="chat-bubble">{msg.content}</div>
+                    {msg.type === "image" ? (
+                      <div className="chat-bubble">
+                        <img
+                          src={msg.content}
+                          alt="Message content"
+                          className="w-64 h-64 object-contain cursor-pointer"
+                          onClick={() => handleImageClick(msg.content)}
+                        />
+                      </div>
+                    ) : (
+                      <div className="chat-bubble">{msg.content}</div>
+                    )}
                     <div className="chat-footer">
                       <time className="text-xs opacity-50">
                         {formatTimestamp(msg.timestamp)}
@@ -102,6 +128,7 @@ const Tchat: React.FC = () => {
             )}
           </div>
           <div className="flex items-center py-20">
+            <input type="file" accept="image/*" onChange={handleFileChange} />
             <input
               placeholder="Enter Message"
               className="mx-4 text-white border-2 border-white font-eloquiabold p-2 rounded-lg"
@@ -111,6 +138,24 @@ const Tchat: React.FC = () => {
             <IonButton onClick={sendMessage}>Send</IonButton>
           </div>
         </div>
+        {selectedImage && (
+          <div className="fixed inset-0 flex items-center justify-center z-50">
+            <div className="fixed inset-0 bg-black opacity-100"></div>
+            <div className="bg-white p-4 rounded-lg relative">
+              <img
+                src={selectedImage}
+                alt="Selected content"
+                className="max-w-full h-auto"
+              />
+              <IonButton
+                className="text-white absolute top-0 left-0 m-2"
+                onClick={handleCloseModal}
+              >
+                Close
+              </IonButton>
+            </div>
+          </div>
+        )}
       </IonContent>
     </IonPage>
   );

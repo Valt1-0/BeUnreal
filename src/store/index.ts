@@ -243,9 +243,9 @@ export class Store {
     }
   }
 
-  async doSendMessage(_chatId: string, _message: firebaseService.Message) {
+  async doSendMessage(_chatId: string, _message: firebaseService.Message,_imageFile : File) {
     try {
-      return await firebaseService.sendMessage(_chatId, _message);
+      return await firebaseService.sendMessage(_chatId, _message, _imageFile);
     } catch (err) {
       console.log(err);
       return err;

@@ -245,7 +245,40 @@ interface ParticipantData {
   deletedAt: null
 }
 
-export const sendMessage = async (chatId: string, message: Message) => {
+export const sendMessage = async (
+  chatId: string,
+  message: Message,
+  imageFile?: File
+) => {
+  if (imageFile && message.type === "image") {
+    const storage = getStorage();
+    const storageRef = ref(storage, `images/${imageFile.name}`);
+    const uploadTask = uploadBytesResumable(storageRef, imageFile);
+
+    // Attendre que le téléchargement soit terminé
+    await new Promise((resolve, reject) => {
+      uploadTask.on(
+        "state_changed",
+        (snapshot) => {
+           const progress =
+             (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+           console.log(`Upload is ${progress}% done`);
+        },
+        (error) => {
+          // Handle unsuccessful uploads
+          reject(error);
+        },
+        () => {
+          // Handle successful uploads on complete
+          resolve(null);
+        }
+      );
+    });
+
+    // Obtenir l'URL de téléchargement
+    message.content = await getDownloadURL(uploadTask.snapshot.ref);
+  }
+
   const messageRef = collection(db, `chats/${chatId}/messages`);
   return await addDoc(messageRef, {
     ...message,
