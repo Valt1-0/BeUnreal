@@ -27,6 +27,7 @@ import "@ionic/react/css/palettes/dark.always.css";
 import "./theme/variables.css";
 import Header from "./components/Header";
 import Tchat from "./pages/Tchat";
+import FriendsPage from "./pages/FriendsPage";
 
 setupIonicReact();
 
@@ -50,6 +51,7 @@ const PublicRoutes: React.FC = () => {
         <Route path="/home" component={Home} />
         <Route path="/tchat" component={TchatPage} exact={true} />
         <Route path={"/tchat/:id"} component={Tchat} exact={true} />
+        <Route path={"/friends"} component={FriendsPage} exact={true} />
         <Redirect to="/home" />
       </IonRouterOutlet>
     </IonReactRouter>
@@ -65,7 +67,6 @@ const App: React.FC = () => {
     </IonApp>
   ) : (
     <IonApp>
-      <Header />
       {store.authenticatedUser ? <PublicRoutes /> : <PrivateRoutes />}
     </IonApp>
   );

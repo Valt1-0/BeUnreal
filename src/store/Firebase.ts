@@ -26,6 +26,8 @@ import {
   where,
   onSnapshot,
   orderBy,
+  startAt,
+  endAt,
   limit,
 } from "firebase/firestore";
 import {
@@ -66,10 +68,24 @@ export const authCheck = async (
     });
   });
 };
-export const getUsers = async () => {
+export const getUsers = async (username?: string) => {
   const usersRef = collection(db, "users");
-  const userSnapshot = await getDocs(usersRef);
+  let q;
+
+  if (username) {
+    q = query(
+      usersRef,
+      orderBy("username"),
+      startAt(username),
+      endAt(username + "\uf8ff")
+    );
+  } else {
+    q = usersRef;
+  }
+
+  const userSnapshot = await getDocs(q);
   const users = userSnapshot.docs.map((doc) => doc.data());
+  console.log('users: ', users);
   return users;
 };
 

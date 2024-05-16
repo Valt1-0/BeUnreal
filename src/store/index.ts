@@ -112,9 +112,10 @@ export class Store {
     return entries(this.items);
   }
 
-  async getUsers() {
+  async getUsers(username? : string) {
     try {
-      const users = await firebaseService.getUsers();
+      const users = await firebaseService.getUsers(username);
+      console.log("userss :", users)
       runInAction(() => {
         this.users = users;
       });
