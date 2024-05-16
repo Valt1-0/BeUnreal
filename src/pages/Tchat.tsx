@@ -14,8 +14,8 @@ const Tchat: React.FC = () => {
   const { store } = React.useContext(MobXProviderContext);
   const { authenticatedUser, tchatMessages } = store;
   const [imageFile, setImageFile] = useState<File | null>(null);
- const [selectedImage, setSelectedImage] = useState<string | null>(null);
-const fileInput = React.useRef<HTMLInputElement>(null);
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const fileInput = React.useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     const fetchTchatMessage = async () => {
@@ -24,15 +24,11 @@ const fileInput = React.useRef<HTMLInputElement>(null);
     fetchTchatMessage();
   }, []);
 
-  useEffect(() => {
-    console.log("message : ", message);
-  }, [message]);
-
-    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-      if (e.target.files && e.target.files[0]) {
-        setImageFile(e.target.files[0]);
-      }
-    };
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      setImageFile(e.target.files[0]);
+    }
+  };
   const handleImageClick = (imageUrl: string) => {
     setSelectedImage(imageUrl);
   };
@@ -66,12 +62,12 @@ const fileInput = React.useRef<HTMLInputElement>(null);
     };
 
     try {
-      await store.doSendMessage(id, newMessage,imageFile);
+      await store.doSendMessage(id, newMessage, imageFile);
       setMessage("");
       setImageFile(null);
-     if (fileInput.current) {
-       fileInput.current.value = "";
-     }
+      if (fileInput.current) {
+        fileInput.current.value = "";
+      }
     } catch (err) {
       console.error(err);
     }
