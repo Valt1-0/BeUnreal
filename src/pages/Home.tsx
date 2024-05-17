@@ -13,7 +13,7 @@ import {
 } from "@ionic/react";
 import { MobXProviderContext } from "mobx-react";
 import * as FAIcons from "react-icons/fa";
-
+import "./home.css";
 const Home: React.FC = () => {
   const { store } = React.useContext(MobXProviderContext);
   let { authenticatedUser } = store;
@@ -22,16 +22,20 @@ const Home: React.FC = () => {
 
   const cameraPreviewOptions: CameraPreviewOptions = {
     position: "rear",
-    height: 400,
-    width: 1080,
+    height: (window.innerHeight-400)/2,
+    width: window.innerWidth,
     lockAndroidOrientation: true,
+    parent: "cameraPreview",
+
+    className: "cameraOverlay",
+    toBack: true,
+    y: 50,
   };
 console.log("imageData ", imageData);
   useEffect(() => {
     CameraPreview.start(cameraPreviewOptions).then(() => {
       setIsCameraRunning(true);
     });
-
     return () => {
       CameraPreview.stop().then(() => {
         setIsCameraRunning(false);
@@ -40,7 +44,7 @@ console.log("imageData ", imageData);
   }, []);
 
   return (
-    <IonPage>
+    <IonPage className="bg-transparent">
       <IonHeader>
         <IonToolbar color={"black"}>
           <div className="flex justify-around items-center">
@@ -70,8 +74,9 @@ console.log("imageData ", imageData);
           </div>
         </IonToolbar>
       </IonHeader>
-      <IonContent>
-        <div id="cameraPreview">
+
+      <div >
+        <div id="cameraPreview" className="cameraPreview">
           {/* <button
             onClick={() => {
               CameraPreview.stop();
@@ -80,22 +85,21 @@ console.log("imageData ", imageData);
             Stop Camera
           </button> */}
           <div className="h-screen flex justify-center items-center">
-            <button
-              className="w-16 h-16 rounded-full flex justify-center items-center border border-white bg-transparent"
-              onClick={() => {
-                if (isCameraRunning) {
-                  CameraPreview.capture({ quality: 100 }).then((result) => {
-                    setImageData(result.value);
-                  });
-                }
-              }}
-            >
-              <FAIcons.FaCamera size={28} className="text-white" />{" "}
-              {/* Render the FaCamera icon with size 28 and white color */}
-            </button>
+            {/* <button
+                className="w-16 h-16 rounded-full flex justify-center items-center border border-white bg-transparent"
+                onClick={() => {
+                  if (isCameraRunning) {
+                    CameraPreview.capture({ quality: 100 }).then((result) => {
+                      setImageData(result.value);
+                    });
+                  }
+                }}
+              >
+                <FAIcons.FaCamera size={28} className="text-white" />{" "}
+              </button> */}
           </div>
         </div>
-      </IonContent>
+      </div>
     </IonPage>
   );
 };

@@ -15,3 +15,9 @@ http://ionicframework.com/docs/theming/ */
   src: url(/assets/fonts/EloquiaDisplay-ExtraLight.otf) format("opentype");
 }
 
+
+body,
+html
+ {
+  background-color: transparent !important;
+}
