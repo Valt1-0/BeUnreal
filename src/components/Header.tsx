@@ -1,5 +1,5 @@
 import React, { useContext } from "react";
-import { IonToolbar } from "@ionic/react";
+import { IonButton, IonToolbar } from "@ionic/react";
 import { MobXProviderContext } from "mobx-react";
 import * as FAIcons from "react-icons/fa";
 
@@ -10,23 +10,25 @@ const Header = () => {
   return (
     <IonToolbar color={"black"}>
       <div className="flex justify-around items-center">
-         {authenticatedUser && <div className="w-10 h-10 flex justify-center items-center">
-          <button>
-            <FAIcons.FaUserFriends size={25} className="text-white" />
-          </button>
-        </div>}
+        {authenticatedUser && (
+          <div className="w-10 h-10 flex justify-center items-center">
+            <IonButton fill="clear" routerLink="/friends">
+              <FAIcons.FaUserFriends size={25} className="text-white" />
+            </IonButton>
+          </div>
+        )}
         <p className="text-xl text-white font-eloquiabold text-center">
-          BeUnreal
+          BeUnreal1
         </p>
-        { authenticatedUser &&
-        <div className="w-10 h-10 rounded-full flex justify-center items-center">
-          <img
-            className="rounded-full"
-            src={`https://robohash.org/${authenticatedUser?.username}.png`}
-            alt="avatar"
-          />
-        </div>
-        }
+        {authenticatedUser && (
+          <div className="w-10 h-10 rounded-full flex justify-center items-center">
+            <img
+              className="rounded-full"
+              src={`https://robohash.org/${authenticatedUser?.username}.png`}
+              alt="avatar"
+            />
+          </div>
+        )}
       </div>
     </IonToolbar>
   );

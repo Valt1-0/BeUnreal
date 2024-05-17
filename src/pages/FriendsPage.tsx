@@ -31,7 +31,13 @@ const users: User[] = [
 
 const FriendsPage: React.FC = () => {
   const { store } = React.useContext(MobXProviderContext);
-  let { authenticatedUser, users, usersNotFollowed, followingUsers } = store;
+  let {
+    authenticatedUser,
+    users,
+    usersNotFollowed,
+    followingUsers,
+    pendingFriendRequests,
+  } = store;
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedSegment, setSelectedSegment] = useState("suggestions");
 
@@ -53,8 +59,20 @@ const FriendsPage: React.FC = () => {
     FetchAllUser();
   }, [selectedSegment == "friends"]);
 
+  useEffect(() => {
+    const FetchAllUser = async () => {
+      await store.doGetPendingFriendsRequests();
+    };
+    FetchAllUser();
+  }, [selectedSegment == "requests"]);
+
   const handleFollowUser = async (user: User) => {
     await store.doFollowUser(user);
+  };
+
+  const handleFriendRequest = async (_userId: string, accepted: Boolean) => {
+    if (accepted) await store.doAcceptFriendRequest(_userId);
+    else await store.doRejectFriendRequest(_userId);
   };
 
   return (
@@ -100,17 +118,49 @@ const FriendsPage: React.FC = () => {
           </>
         )}
         {selectedSegment == "friends" && (
-            <IonList>
-              {followingUsers.map((user: any) => (
-                <IonItem key={user.uid}>
-                  <IonAvatar slot="start">
-                    <img src={user.avatar} />
-                  </IonAvatar>
-                  <IonLabel>{user.username}</IonLabel>
-                </IonItem>
-              ))}
-            </IonList>
-            )}
+          <IonList>
+            {followingUsers.map((user: any) => (
+              <IonItem key={user.uid}>
+                <IonAvatar slot="start">
+                  <img src={user.avatar} />
+                </IonAvatar>
+                <IonLabel>{user.username}</IonLabel>
+              </IonItem>
+            ))}
+          </IonList>
+        )}
+        {selectedSegment == "requests" && (
+          <IonList>
+            {pendingFriendRequests.map((user: any) => (
+              <IonItem key={user.uid}>
+                <IonAvatar slot="start">
+                  <img src={user.avatar} />
+                </IonAvatar>
+                <IonLabel>{user.username}</IonLabel>
+                <IonButton
+                  fill="clear"
+                  className="border rounded text-white w-1/4"
+                  slot="end"
+                  onClick={() => {
+                    handleFriendRequest(user.uid,true);
+                  }}
+                >
+                  Accept
+                </IonButton>
+                <IonButton
+                  fill="clear"
+                  className="border rounded text-white w-1/4"
+                  slot="end"
+                  onClick={() => {
+                    handleFriendRequest(user.uid,false);
+                  }}
+                >
+                  Refuse
+                </IonButton>
+              </IonItem>
+            ))}
+          </IonList>
+        )}
       </IonContent>
       <IonFooter className="flex w-[95%] bottom-4 justify-center items-center mx-auto">
         <IonSegment

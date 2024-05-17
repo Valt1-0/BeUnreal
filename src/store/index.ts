@@ -19,6 +19,7 @@ export class Store {
   tchats: any[] = [];
   tchatMessages: any[] = [];
   followingUsers: any[] = [];
+  pendingFriendRequests: any[] = [];
 
   constructor() {
     makeObservable(this, {
@@ -32,6 +33,7 @@ export class Store {
       tchatMessages: observable,
       usersNotFollowed: observable,
       followingUsers: observable,
+      pendingFriendRequests: observable,
       authenticatedUser: computed,
       doCheckAuth: computed,
       itemEntries: computed,
@@ -50,6 +52,9 @@ export class Store {
       doGetUsersNotFollowed: action,
       doFollowUser: action,
       doGetFollowingUsers: action,
+      doGetPendingFriendsRequests: action,
+      doAcceptFriendRequest: action,
+      doRejectFriendRequest: action,
     });
 
     this.getUsers = this.getUsers.bind(this);
@@ -282,7 +287,7 @@ export class Store {
 
   async doFollowUser(_userId: string) {
     try {
-      await firebaseService.addFriend(this.activeUser.uid, _userId);
+      await firebaseService.sendFriendRequest(this.activeUser.uid, _userId);
       return true;
     } catch (err) {
       console.error("Error following user: ", err);
@@ -303,5 +308,38 @@ export class Store {
       return null;
     }
   }
-}
 
+  async doGetPendingFriendsRequests() {
+    const useruid = this.activeUser.uid;
+    try {
+      const users = await firebaseService.getPendingFriendRequests(useruid);
+      runInAction(() => {
+        this.pendingFriendRequests = users;
+      });
+      return users;
+    } catch (err) {
+      console.error("Error to get following user: ", err);
+      return null;
+    }
+  }
+
+  async doAcceptFriendRequest(_userId: string) {
+    try {
+      await firebaseService.acceptFriendRequest(this.activeUser.uid, _userId);
+      return true;
+    } catch (err) {
+      console.error("Error to accept friend request: ", err);
+      return false;
+    }
+  }
+
+  async doRejectFriendRequest(_userId: string) {
+    try {
+      await firebaseService.rejectFriendRequest(this.activeUser.uid, _userId);
+      return true;
+    } catch (err) {
+      console.error("Error to reject friend request: ", err);
+      return false;
+    }
+  }
+}

@@ -458,10 +458,30 @@ export const getLatestMessage = (
   });
 };
 
-export const addFriend = async (
+export const sendFriendRequest = async (
   currentUserId: string,
   friendUserId: string
 ) => {
+  // Ajouter une demande d'ami à la collection "friendRequests"
+  await setDoc(
+    doc(collection(db, "friendRequests"), `${currentUserId}_${friendUserId}`),
+    {
+      from: currentUserId,
+      to: friendUserId,
+      status: "pending", // La demande est en attente d'acceptation
+    }
+  );
+};
+
+export const acceptFriendRequest = async (
+  currentUserId: string,
+  friendUserId: string
+) => {
+  // Supprimer la demande d'ami de la collection "friendRequests"
+  await deleteDoc(
+    doc(collection(db, "friendRequests"), `${currentUserId}_${friendUserId}`)
+  );
+
   // Ajouter friendUserId à la liste des personnes suivies par currentUserId
   await setDoc(
     doc(collection(db, "users", currentUserId, "following"), friendUserId),
@@ -473,6 +493,45 @@ export const addFriend = async (
     doc(collection(db, "users", friendUserId, "followers"), currentUserId),
     {}
   );
+};
+
+export const rejectFriendRequest = async (
+  currentUserId: string,
+  friendUserId: string
+) => {
+  // Supprimer la demande d'ami de la collection "friendRequests"
+  await deleteDoc(
+    doc(collection(db, "friendRequests"), `${currentUserId}_${friendUserId}`)
+  );
+};
+
+export const getPendingFriendRequests = async (userId: string) => {
+  const requestsSnapshot = await getDocs(
+    query(
+      collection(db, "friendRequests"),
+      where("to", "==", userId),
+      where("status", "==", "pending")
+    )
+  );
+
+  const requests = await Promise.all(
+    requestsSnapshot.docs.map(async (docRequest) => {
+      const requestData = docRequest.data();
+      const userSnapshot = await getDoc(doc(db, "users", requestData.from));
+      const userData = userSnapshot.data();
+      const username = userData?.username || "";
+
+      return {
+        id: docRequest.id,
+        from: requestData.from,
+        to: requestData.to,
+        status: requestData.status,
+        username: username,
+      };
+    })
+  );
+
+  return requests;
 };
 
 export const getFollowing = async (userId: string) => {
