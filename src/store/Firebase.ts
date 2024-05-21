@@ -561,11 +561,37 @@ export const getUsersNotFollowed = async (currentUserId: string) => {
   const followingUsers: { uid: string; username: any }[] = await getFollowing(
     currentUserId
   );
-  const notFollowedUsers = allUsers.filter(
-    (user) =>
-      !followingUsers.some((followingUser) => followingUser.uid === user.uid) &&
-      user.uid !== currentUserId
-  );
 
-  return notFollowedUsers;
+  // Récupérer toutes les demandes d'amis en attente de l'utilisateur actuel
+  const requestsSnapshot = await getDocs(
+    query(
+      collection(db, "friendRequests"),
+      where("from", "==", currentUserId),
+      where("status", "==", "pending")
+    )
+  );
+  const pendingRequests = requestsSnapshot.docs.map((doc) => doc.data());
+  const pendingUserIds = pendingRequests.map((request) => request.to);
+
+  const usersWithStatus = allUsers
+    .filter((user) => user.uid !== currentUserId) // Exclure l'utilisateur actuel
+    .map((user) => {
+      let status;
+      if (
+        followingUsers.some((followingUser) => followingUser.uid === user.uid)
+      ) {
+        status = "follow";
+      } else if (pendingUserIds.includes(user.uid)) {
+        status = "pending";
+      } else {
+        status = "notFollowed";
+      }
+
+      return {
+        ...user,
+        status,
+      };
+    });
+
+  return usersWithStatus;
 };

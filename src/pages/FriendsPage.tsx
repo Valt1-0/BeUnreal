@@ -106,11 +106,20 @@ const FriendsPage: React.FC = () => {
                     fill="clear"
                     className="border rounded text-white w-1/4"
                     slot="end"
+                    disabled={
+                      user.status === "follow" || user.status === "pending"
+                    }
                     onClick={() => {
-                      handleFollowUser(user.uid);
+                      if (user.status === "notFollowed") {
+                        handleFollowUser(user.uid);
+                      }
                     }}
                   >
-                    Add
+                    {user.status === "follow"
+                      ? "Ami"
+                      : user.status === "pending"
+                      ? "En attente"
+                      : "Add"}
                   </IonButton>
                 </IonItem>
               ))}
@@ -142,7 +151,7 @@ const FriendsPage: React.FC = () => {
                   className="border rounded text-white w-1/4"
                   slot="end"
                   onClick={() => {
-                    handleFriendRequest(user.uid,true);
+                    handleFriendRequest(user.uid, true);
                   }}
                 >
                   Accept
@@ -152,7 +161,7 @@ const FriendsPage: React.FC = () => {
                   className="border rounded text-white w-1/4"
                   slot="end"
                   onClick={() => {
-                    handleFriendRequest(user.uid,false);
+                    handleFriendRequest(user.uid, false);
                   }}
                 >
                   Refuse

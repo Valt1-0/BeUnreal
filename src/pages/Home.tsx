@@ -33,14 +33,14 @@ const Home: React.FC = () => {
   useEffect(() => {
     CameraPreview.start(cameraPreviewOptions).then(() => {
       setIsCameraRunning(true);
-      document.body.style.backgroundColor = "transparent";
-      document.documentElement.style.backgroundColor = "transparent";
+      // document.body.style.backgroundColor = "transparent";
+      // document.documentElement.style.backgroundColor = "transparent";
     });
     return () => {
       CameraPreview.stop().then(() => {
         setIsCameraRunning(false);
-        document.body.style.backgroundColor = "";
-        document.documentElement.style.backgroundColor = "";
+        // document.body.style.backgroundColor = "";
+        // document.documentElement.style.backgroundColor = "";
       });
     };
   }, []);
