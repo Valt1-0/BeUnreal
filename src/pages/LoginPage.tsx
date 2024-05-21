@@ -57,7 +57,6 @@ const LoginPage: React.FC = () => {
         <IonText color="danger" className="p-8" style={{ fontWeight: "500" }}>
           {initializationError && initializationError.message}
         </IonText>
-
         <IonItem>
           <IonLabel position="floating">Email Address</IonLabel>
           <IonInput
