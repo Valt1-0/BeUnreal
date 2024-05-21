@@ -8,7 +8,7 @@ const Header = () => {
   let { authenticatedUser } = store;
 
   return (
-    <IonToolbar color={"black"}>
+    <IonToolbar color={"black"} className="bg-black">
       <div className="flex justify-around items-center">
         {authenticatedUser && (
           <div className="w-10 h-10 flex justify-center items-center">
