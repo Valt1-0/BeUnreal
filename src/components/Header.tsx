@@ -18,7 +18,7 @@ const Header = () => {
           </div>
         )}
         <p className="text-xl text-white font-eloquiabold text-center">
-          BeUnreal1
+          BeUnreal
         </p>
         {authenticatedUser && (
           <div className="w-10 h-10 rounded-full flex justify-center items-center">
