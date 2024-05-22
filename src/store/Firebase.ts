@@ -502,7 +502,7 @@ export const rejectFriendRequest = async (
 ) => {
   // Supprimer la demande d'ami de la collection "friendRequests"
   await deleteDoc(
-    doc(collection(db, "friendRequests"), `${currentUserId}_${friendUserId}`)
+    doc(collection(db, "friendRequests"), `${friendUserId}_${currentUserId}`)
   );
 };
 
