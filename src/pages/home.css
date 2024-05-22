@@ -8,14 +8,6 @@
     box-shadow: 0 0 0 600px rgba(0, 0, 0, 1);
     left: 5%;
 }
-.cameraPreview {
-    position: absolute !important;
-    top: 0;
-    left: 0;
-    justify-content: center;
-    z-index: 20;
-}
-
 
 body.camera-active {
     --background: transparent;
