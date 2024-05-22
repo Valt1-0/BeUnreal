@@ -7,7 +7,7 @@ import {
 } from "mobx";
 import { get, set, entries, remove } from "mobx";
 import * as firebaseService from "./Firebase";
-import { serverTimestamp } from "firebase/firestore";
+import { DocumentSnapshot, serverTimestamp } from "firebase/firestore";
 export class Store {
   activeUser: any = null;
   loading: boolean = false;
@@ -269,10 +269,11 @@ export class Store {
     }
   }
 
-  async doGetUsersNotFollowed() {
+  async doGetUsersNotFollowed(_status?: string, lastUser?: DocumentSnapshot ) {
     try {
-      const users = await firebaseService.getUsersNotFollowed(
-        this.activeUser.uid
+      const users = await firebaseService.getUsersFollowWithStatus(
+        this.activeUser.uid,
+        _status
       );
 
       runInAction(() => {

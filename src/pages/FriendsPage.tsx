@@ -15,6 +15,8 @@ import {
   IonFooter,
   IonSegment,
   IonSegmentButton,
+  IonInfiniteScroll,
+  IonInfiniteScrollContent,
 } from "@ionic/react";
 import { arrowForward } from "ionicons/icons";
 interface User {
@@ -40,31 +42,50 @@ const FriendsPage: React.FC = () => {
   } = store;
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedSegment, setSelectedSegment] = useState("suggestions");
+  const [disableInfiniteScroll, setDisableInfiniteScroll] =
+    useState<boolean>(false);
+  const [_usersNotFollowed, setUsersNotFollowed] = useState<User[]>([]);
+  async function searchNext($event: CustomEvent<void>) {
+    const lastUser = usersNotFollowed.slice(-1)[0];
+    const users = await store.doGetUsersNotFollowed(undefined, lastUser);
+
+    if (users.length < 10) {
+      // Remplacer 10 par le nombre d'utilisateurs que vous voulez par page
+      setDisableInfiniteScroll(true);
+    }
+
+    setUsersNotFollowed([..._usersNotFollowed, ...users]);
+    ($event.target as HTMLIonInfiniteScrollElement).complete();
+  }
 
   const handleSegmentChange = (event: CustomEvent) => {
+    setUsersNotFollowed([]);
     setSelectedSegment(event.detail.value);
   };
 
   useEffect(() => {
-    const FetchAllUser = async () => {
-      await store.doGetUsersNotFollowed();
+    const FetchAllUserSuggestions = async () => {
+      const users = await store.doGetUsersNotFollowed();
+      setUsersNotFollowed(users);
     };
-    FetchAllUser();
-  }, [selectedSegment == "suggestions", searchTerm]);
 
-  useEffect(() => {
-    const FetchAllUser = async () => {
-      await store.doGetFollowingUsers();
+    const FetchAllUserFriends = async () => {
+      const users = await store.doGetUsersNotFollowed("follow");
+      setUsersNotFollowed(users);
     };
-    FetchAllUser();
-  }, [selectedSegment == "friends"]);
 
-  useEffect(() => {
-    const FetchAllUser = async () => {
-      await store.doGetPendingFriendsRequests();
+    const FetchAllUserRequest = async () => {
+      const users = await store.doGetUsersNotFollowed("Requests");
+      console.log("users .. ", users);
+      setUsersNotFollowed(users);
     };
-    FetchAllUser();
-  }, [selectedSegment == "requests"]);
+
+    if (selectedSegment == "suggestions") FetchAllUserSuggestions();
+    else if (selectedSegment == "friends") FetchAllUserFriends();
+    else if (selectedSegment == "requests") FetchAllUserRequest();
+  }, [selectedSegment, searchTerm]);
+
+
 
   const handleFollowUser = async (user: User) => {
     await store.doFollowUser(user);
@@ -96,7 +117,7 @@ const FriendsPage: React.FC = () => {
               type="text"
             />
             <IonList>
-              {usersNotFollowed.map((user: any) => (
+              {_usersNotFollowed.map((user: any) => (
                 <IonItem key={user.uid}>
                   <IonAvatar slot="start">
                     <img src={user.avatar} />
@@ -124,11 +145,18 @@ const FriendsPage: React.FC = () => {
                 </IonItem>
               ))}
             </IonList>
+            <IonInfiniteScroll
+              threshold="10px"
+              disabled={disableInfiniteScroll}
+              onIonInfinite={(e: CustomEvent<void>) => searchNext(e)}
+            >
+              <IonInfiniteScrollContent loadingText="Loading more users..."></IonInfiniteScrollContent>
+            </IonInfiniteScroll>
           </>
         )}
         {selectedSegment == "friends" && (
           <IonList>
-            {followingUsers.map((user: any) => (
+            {_usersNotFollowed.map((user: any) => (
               <IonItem key={user.uid}>
                 <IonAvatar slot="start">
                   <img src={user.avatar} />
@@ -140,7 +168,7 @@ const FriendsPage: React.FC = () => {
         )}
         {selectedSegment == "requests" && (
           <IonList>
-            {pendingFriendRequests.map((user: any) => (
+            {_usersNotFollowed.map((user: any) => (
               <IonItem key={user.uid}>
                 <IonAvatar slot="start">
                   <img src={user.avatar} />

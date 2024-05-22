@@ -29,6 +29,7 @@ import {
   startAt,
   endAt,
   limit,
+  DocumentSnapshot,
 } from "firebase/firestore";
 import {
   getStorage,
@@ -527,10 +528,11 @@ export const getPendingFriendRequests = async (userId: string) => {
         to: requestData.to,
         status: requestData.status,
         username: username,
+        uuid: requestData.to,
       };
     })
   );
-
+  console.log("requests", requests);
   return requests;
 };
 
@@ -556,42 +558,75 @@ export const getFollowing = async (userId: string) => {
   return following;
 };
 
-export const getUsersNotFollowed = async (currentUserId: string) => {
+export const getUsersFollowWithStatus = async (
+  currentUserId: string,
+  status?: string,
+  lastUser?: DocumentSnapshot
+) => {
   const allUsers = await getUsers();
   const followingUsers: { uid: string; username: any }[] = await getFollowing(
     currentUserId
   );
 
-  // Récupérer toutes les demandes d'amis en attente de l'utilisateur actuel
-  const requestsSnapshot = await getDocs(
-    query(
-      collection(db, "friendRequests"),
-      where("from", "==", currentUserId),
-      where("status", "==", "pending")
-    )
-  );
-  const pendingRequests = requestsSnapshot.docs.map((doc) => doc.data());
-  const pendingUserIds = pendingRequests.map((request) => request.to);
+  let usersWithStatus;
+  if (status == "Requests") {
+    const pendingFriendRequests = await getPendingFriendRequests(currentUserId);
+   
+     usersWithStatus = pendingFriendRequests
+    ;
+  } else {
+    // Récupérer toutes les demandes d'amis en attente de l'utilisateur actuel
+    const requestsSnapshot = await getDocs(
+      query(
+        collection(db, "friendRequests"),
+        where("from", "==", currentUserId),
+        where("status", "==", "pending")
+      )
+    );
+    const pendingFollowRequests = requestsSnapshot.docs.map((doc) =>
+      doc.data()
+    );
+    const pendingFollowUserIds = pendingFollowRequests.map(
+      (request) => request.to
+    );
 
-  const usersWithStatus = allUsers
-    .filter((user) => user.uid !== currentUserId) // Exclure l'utilisateur actuel
-    .map((user) => {
-      let status;
-      if (
-        followingUsers.some((followingUser) => followingUser.uid === user.uid)
-      ) {
-        status = "follow";
-      } else if (pendingUserIds.includes(user.uid)) {
-        status = "pending";
-      } else {
-        status = "notFollowed";
-      }
+    usersWithStatus = allUsers
+      .filter((user) => user.uid !== currentUserId) // Exclure l'utilisateur actuel
+      .map((user) => {
+        let status;
+        if (
+          followingUsers.some((followingUser) => followingUser.uid === user.uid)
+        ) {
+          status = "follow";
+        } else if (pendingFollowUserIds.includes(user.uid)) {
+          status = "pending";
+        } else {
+          status = "notFollowed";
+        }
 
-      return {
-        ...user,
-        status,
-      };
-    });
+        return {
+          ...user,
+          status,
+        };
+      });
 
+    // Filtrer les utilisateurs par statut si un statut est fourni
+    if (status) {
+      usersWithStatus = usersWithStatus.filter(
+        (user) => user.status === status
+      );
+    }
+  }
+
+
+  // Pagination
+  if (lastUser ) {
+    const index = usersWithStatus.findIndex((user) => 'uid' in user && user.uid === lastUser.id);
+    usersWithStatus = usersWithStatus.slice(index + 1, index + 1 + 10);
+  } else {
+  
+    usersWithStatus = usersWithStatus?.slice(0, 10);
+  }
+  console.log("usersWithStatus", usersWithStatus);
   return usersWithStatus;
 };
