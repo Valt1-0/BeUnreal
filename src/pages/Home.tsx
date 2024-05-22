@@ -59,11 +59,10 @@ const Home: React.FC = () => {
     <IonPage>
       <Header />
       <IonContent fullscreen={false}>
-        <div id="cameraPreview" className="absolute flex w-full h-full ">
-          {" "}
+        <div id="cameraPreview" className="absolute flex w-full h-full justify-center ">
         </div>
         <div className="cameraLoader"></div>
-        <div className="h-screen flex relative justify-center items-center  z-999">
+        <div className="h-screen flex relative justify-center top-[25%] items-center  z-999">
           <button
             className="w-16 h-16 rounded-full flex text-white justify-center items-center border border-white  z-999"
             onClick={() => {
