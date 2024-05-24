@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "77689837748",
+    "firebase_url": "https://beunreal-b282b-default-rtdb.europe-west1.firebasedatabase.app",
+    "project_id": "beunreal-b282b",
+    "storage_bucket": "beunreal-b282b.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:77689837748:android:b1eb2eb8066ab98a6b9fe1",
+        "android_client_info": {
+          "package_name": "io.ionic.starter"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "77689837748-75bi1jqbj5cq437ovnk98180rjtgb6k5.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB_MEvmO4b7nBklTH1ix5Kw_pVMbTpDWsg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "77689837748-75bi1jqbj5cq437ovnk98180rjtgb6k5.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

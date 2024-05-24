@@ -20,6 +20,7 @@ export class Store {
   tchatMessages: any[] = [];
   followingUsers: any[] = [];
   pendingFriendRequests: any[] = [];
+  pendingFriendRequestsRealtime: any[] = [];
 
   constructor() {
     makeObservable(this, {
@@ -55,6 +56,8 @@ export class Store {
       doGetPendingFriendsRequests: action,
       doAcceptFriendRequest: action,
       doRejectFriendRequest: action,
+      pendingFriendRequestsRealtime: observable,
+      doGetPendingFriendRequestsRealtime: action,
     });
 
     this.getUsers = this.getUsers.bind(this);
@@ -269,7 +272,7 @@ export class Store {
     }
   }
 
-  async doGetUsersNotFollowed(_status?: string, lastUser?: DocumentSnapshot ) {
+  async doGetUsersNotFollowed(_status?: string, lastUser?: DocumentSnapshot) {
     try {
       const users = await firebaseService.getUsersFollowWithStatus(
         this.activeUser.uid,
@@ -342,5 +345,19 @@ export class Store {
       console.error("Error to reject friend request: ", err);
       return false;
     }
+  }
+  doGetPendingFriendRequestsRealtime() {
+    if (this.activeUser) {
+      console.log("testtt")
+    firebaseService.getPendingFriendRequestsRealtime(
+      this.activeUser.uid,
+      (requests: any[]) => {
+        runInAction(() => {
+          this.pendingFriendRequestsRealtime = requests;
+        });
+      }
+    );
+    }
+
   }
 }

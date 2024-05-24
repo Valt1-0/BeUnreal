@@ -11,7 +11,15 @@ import Home from "./pages/Home";
 import Register from "./pages/Register";
 import LoginPage from "./pages/LoginPage";
 import TchatPage from "./pages/TchatPage";
-import { observer, MobXProviderContext } from "mobx-react";
+import { observer, MobXProviderContext, } from "mobx-react";
+import { toJS, autorun } from "mobx";
+import {
+  PushNotificationSchema,
+  PushNotifications,
+  Token,
+  ActionPerformed,
+} from "@capacitor/push-notifications";
+
 
 /* Core CSS required for Ionic components to work properly */
 import "@ionic/react/css/core.css";
@@ -28,6 +36,7 @@ import "./theme/variables.css";
 import Header from "./components/Header";
 import Tchat from "./pages/Tchat";
 import FriendsPage from "./pages/FriendsPage";
+import { Toast } from "@capacitor/toast";
 
 setupIonicReact();
 
@@ -60,6 +69,27 @@ const PublicRoutes: React.FC = () => {
 
 const App: React.FC = () => {
   const { store } = React.useContext(MobXProviderContext);
+
+
+    // useEffect(() => {
+    //   // Commencez à écouter les demandes d'amis en attente
+    //   store.doGetPendingFriendRequestsRealtime();
+
+    //   // Écoutez les changements dans l'observable
+    //   const disposer = autorun(() => {
+    //     const requests = toJS(store.pendingFriendRequestsRealtime);
+    //     console.log("requests", requests);
+    //     if (requests.length > 0) {
+    //       // Envoyez une notification pour chaque nouvelle demande d'ami
+    //       requests.forEach((request: { username: string }) => {
+    //         new Notification(`Nouvelle demande d'ami de ${request.username}`);
+    //       });
+    //     }
+    //   });
+
+    //   // Arrêtez d'écouter les changements lorsque le composant est démonté
+    //   return () => disposer();
+    // }, [store, store.authenticatedUser]);
 
   return !store.authCheckComplete ? (
     <IonApp>

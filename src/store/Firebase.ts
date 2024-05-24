@@ -478,20 +478,21 @@ export const acceptFriendRequest = async (
   currentUserId: string,
   friendUserId: string
 ) => {
+  console.log("Accept", currentUserId, friendUserId);
   // Supprimer la demande d'ami de la collection "friendRequests"
   await deleteDoc(
-    doc(collection(db, "friendRequests"), `${currentUserId}_${friendUserId}`)
+    doc(collection(db, "friendRequests"), `${friendUserId}_${currentUserId}`)
   );
 
-  // Ajouter friendUserId à la liste des personnes suivies par currentUserId
+  // Ajouter friendUserId à la liste des followers de currentUserId
   await setDoc(
-    doc(collection(db, "users", currentUserId, "following"), friendUserId),
+    doc(collection(db, "users", currentUserId, "followers"), friendUserId),
     {}
   );
 
-  // Ajouter currentUserId à la liste des followers de friendUserId
+  // Ajouter currentUserId à la liste des personnes suivies par friendUserId
   await setDoc(
-    doc(collection(db, "users", friendUserId, "followers"), currentUserId),
+    doc(collection(db, "users", friendUserId, "following"), currentUserId),
     {}
   );
 };
@@ -505,6 +506,41 @@ export const rejectFriendRequest = async (
     doc(collection(db, "friendRequests"), `${friendUserId}_${currentUserId}`)
   );
 };
+
+export const getPendingFriendRequestsRealtime = (
+  userId: string,
+  callback: (requests: any[]) => void
+) => {
+  return onSnapshot(
+    query(
+      collection(db, "friendRequests"),
+      where("to", "==", userId),
+      where("status", "==", "pending")
+    ),
+    async (snapshot) => {
+      const requests = await Promise.all(
+        snapshot.docs.map(async (docRequest) => {
+          const requestData = docRequest.data();
+          const userSnapshot = await getDoc(doc(db, "users", requestData.from));
+          const userData = userSnapshot.data();
+          const username = userData?.username || "";
+
+          return {
+            id: docRequest.id,
+            from: requestData.from,
+            to: requestData.to,
+            status: requestData.status,
+            username: username,
+            uuid: requestData.to,
+          };
+        })
+      );
+      console.log("requests", requests);
+      callback(requests);
+    }
+  );
+};
+
 
 export const getPendingFriendRequests = async (userId: string) => {
   const requestsSnapshot = await getDocs(

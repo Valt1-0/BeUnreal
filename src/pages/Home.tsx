@@ -14,6 +14,16 @@ import { MobXProviderContext } from "mobx-react";
 import * as FAIcons from "react-icons/fa";
 import "./home.css";
 import Header from "../components/Header";
+import {
+  PushNotificationSchema,
+  PushNotifications,
+  Token,
+  ActionPerformed,
+} from "@capacitor/push-notifications";
+
+import { Toast } from "@capacitor/toast";
+
+
 const Home: React.FC = () => {
   const { store } = React.useContext(MobXProviderContext);
   let { authenticatedUser } = store;
@@ -32,6 +42,77 @@ const Home: React.FC = () => {
     height: window.screen.height / 2,
   };
   console.log("imageData ", imageData);
+
+
+
+
+
+   const nullEntry: any[] = [];
+   const [notifications, setnotifications] = useState(nullEntry);
+
+   useEffect(() => {
+     registerNotifications();
+     addListeners();
+   }, []);
+
+const addListeners = async () => {
+  await PushNotifications.addListener("registration", (token) => {
+    console.info("Registration token: ", token.value);
+      showToast(`Push registration success ${token.value}`);
+  });
+
+  await PushNotifications.addListener("registrationError", (err) => {
+    console.error("Registration error: ", err.error);
+  });
+
+  await PushNotifications.addListener(
+    "pushNotificationReceived",
+    (notification) => {
+      console.log("Push notification received: ", notification);
+    }
+  );
+
+  await PushNotifications.addListener(
+    "pushNotificationActionPerformed",
+    (notification) => {
+      console.log(
+        "Push notification action performed",
+        notification.actionId,
+        notification.inputValue
+      );
+    }
+  );
+};
+
+const registerNotifications = async () => {
+  let permStatus = await PushNotifications.checkPermissions();
+
+  if (permStatus.receive === "prompt") {
+    permStatus = await PushNotifications.requestPermissions();
+  }
+
+  if (permStatus.receive !== "granted") {
+    throw new Error("User denied permissions!");
+  }
+
+  await PushNotifications.register();
+};
+
+const getDeliveredNotifications = async () => {
+  const notificationList = await PushNotifications.getDeliveredNotifications();
+  console.log("delivered notifications", notificationList);
+};
+   const showToast = async (msg: string) => {
+     await Toast.show({
+       text: msg,
+     });
+   };
+
+
+
+
+
+
   useEffect(() => {
     CameraPreview.start(cameraPreviewOptions).then(() => {
       setIsCameraRunning(true);

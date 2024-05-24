@@ -1,9 +1,9 @@
 import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'io.ionic.starter',
-  appName: 'BeUnreal',
-  webDir: 'dist',
+  appId: "io.ionic.starter",
+  appName: "BeUnreal",
+  webDir: "dist",
   plugins: {
     SplashScreen: {
       launchShowDuration: 3000,
@@ -20,6 +20,9 @@ const config: CapacitorConfig = {
       splashImmersive: true,
       layoutName: "launch_screen",
       useDialog: true,
+    },
+    PushNotifications: {
+      presentationOptions: ["badge", "sound", "alert"],
     },
   },
 };
