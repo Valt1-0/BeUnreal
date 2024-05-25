@@ -36,6 +36,7 @@ import {
   ref,
   uploadBytesResumable,
   getDownloadURL,
+  uploadString,
 } from "firebase/storage";
 
 const firebaseConfig = {
@@ -119,12 +120,23 @@ export const registerUser = (userInfo: UserInfo) => {
     userInfo.password
   ).then((newUser) => {
     let { email, username } = userInfo;
+    let userId = newUser.user.uid;
 
-    return setDoc(doc(db, "users", newUser.user.uid), {
-      email,
-      username,
-    }).then(() => {
-      return { ...newUser.user, username };
+    // Create an array of folder paths to be created
+    const folders = [`users/${userId}/beunreal/.empty`, `users/${userId}/profile/.empty`];
+
+    // Function to create empty folders
+    const createEmptyFolder = async (path: string) => {
+      const folderRef = ref(storage, path);
+      await uploadString(folderRef, ""); // Uploading an empty string creates a folder
+    };
+
+    // Create all empty folders
+    return Promise.all(folders.map(createEmptyFolder)).then(() => {
+      // Set user document in Firestore
+      return setDoc(doc(db, "users", userId), { email, username }).then(() => {
+        return { ...newUser.user, username };
+      });
     });
   });
 };
@@ -571,9 +583,8 @@ export const getUsersFollowWithStatus = async (
   let usersWithStatus;
   if (status == "Requests") {
     const pendingFriendRequests = await getPendingFriendRequests(currentUserId);
-   
-     usersWithStatus = pendingFriendRequests
-    ;
+
+    usersWithStatus = pendingFriendRequests;
   } else {
     // Récupérer toutes les demandes d'amis en attente de l'utilisateur actuel
     const requestsSnapshot = await getDocs(
@@ -618,13 +629,13 @@ export const getUsersFollowWithStatus = async (
     }
   }
 
-
   // Pagination
-  if (lastUser ) {
-    const index = usersWithStatus.findIndex((user) => 'uid' in user && user.uid === lastUser.id);
+  if (lastUser) {
+    const index = usersWithStatus.findIndex(
+      (user) => "uid" in user && user.uid === lastUser.id
+    );
     usersWithStatus = usersWithStatus.slice(index + 1, index + 1 + 10);
   } else {
-  
     usersWithStatus = usersWithStatus?.slice(0, 10);
   }
   console.log("usersWithStatus", usersWithStatus);
