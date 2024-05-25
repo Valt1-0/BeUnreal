@@ -45,11 +45,12 @@ const FriendsPage: React.FC = () => {
   const [disableInfiniteScroll, setDisableInfiniteScroll] =
     useState<boolean>(false);
   const [_usersNotFollowed, setUsersNotFollowed] = useState<User[]>([]);
+
   async function searchNext($event: CustomEvent<void>) {
     const lastUser = usersNotFollowed.slice(-1)[0];
     const users = await store.doGetUsersNotFollowed(undefined, lastUser);
 
-    if (users.length < 10) {
+    if (usersNotFollowed.length < 10) {
       // Remplacer 10 par le nombre d'utilisateurs que vous voulez par page
       setDisableInfiniteScroll(true);
     }
@@ -64,34 +65,43 @@ const FriendsPage: React.FC = () => {
   };
 
   useEffect(() => {
-    const FetchAllUserSuggestions = async () => {
-      const users = await store.doGetUsersNotFollowed();
-      setUsersNotFollowed(users);
-    };
+    console.log("test");
+    setUsersNotFollowed(usersNotFollowed);
+  }, [usersNotFollowed]);
 
-    const FetchAllUserFriends = async () => {
-      const users = await store.doGetUsersNotFollowed("follow");
-      setUsersNotFollowed(users);
-    };
+useEffect(() => {
+  const unsubscribes: { [key: string]: any } = {};
 
-    const FetchAllUserRequest = async () => {
-      const users = await store.doGetUsersNotFollowed("Requests");
-      console.log("users .. ", users);
-      setUsersNotFollowed(users);
-    };
+  const FetchAllUserSuggestions = async () => {
+    unsubscribes["suggestions"] = await store.doGetUsersNotFollowed();
+  };
 
-    if (selectedSegment == "suggestions") FetchAllUserSuggestions();
-    else if (selectedSegment == "friends") FetchAllUserFriends();
-    else if (selectedSegment == "requests") FetchAllUserRequest();
-  }, [selectedSegment, searchTerm]);
+  const FetchAllUserFriends = async () => {
+    unsubscribes["friends"] = await store.doGetUsersNotFollowed("follow");
+  };
 
+  const FetchAllUserRequest = async () => {
+    unsubscribes["requests"] = await store.doGetUsersNotFollowed("Requests");
+  };
 
+  if (selectedSegment == "suggestions") FetchAllUserSuggestions();
+  else if (selectedSegment == "friends") FetchAllUserFriends();
+  else if (selectedSegment == "requests") FetchAllUserRequest();
+
+  return () => {
+    if (unsubscribes[selectedSegment]) {
+      unsubscribes[selectedSegment]();
+    }
+  };
+}, [selectedSegment, searchTerm]);
 
   const handleFollowUser = async (user: User) => {
     await store.doFollowUser(user);
   };
 
   const handleFriendRequest = async (_userId: string, accepted: Boolean) => {
+    console.log(_userId, accepted);
+
     if (accepted) await store.doAcceptFriendRequest(_userId);
     else await store.doRejectFriendRequest(_userId);
   };
@@ -179,7 +189,7 @@ const FriendsPage: React.FC = () => {
                   className="border rounded text-white w-1/4"
                   slot="end"
                   onClick={() => {
-                    handleFriendRequest(user.uid, true);
+                    handleFriendRequest(user.from, true);
                   }}
                 >
                   Accept
@@ -189,7 +199,7 @@ const FriendsPage: React.FC = () => {
                   className="border rounded text-white w-1/4"
                   slot="end"
                   onClick={() => {
-                    handleFriendRequest(user.uid, false);
+                    handleFriendRequest(user.from, false);
                   }}
                 >
                   Refuse

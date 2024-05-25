@@ -5,6 +5,12 @@ project(':capacitor-android').projectDir = new File('../node_modules/@capacitor/
 include ':capacitor-community-camera-preview'
 project(':capacitor-community-camera-preview').projectDir = new File('../node_modules/@capacitor-community/camera-preview/android')
 
+include ':capacitor-community-fcm'
+project(':capacitor-community-fcm').projectDir = new File('../node_modules/@capacitor-community/fcm/android')
+
+include ':capacitor-community-firebase-analytics'
+project(':capacitor-community-firebase-analytics').projectDir = new File('../node_modules/@capacitor-community/firebase-analytics/android')
+
 include ':capacitor-app'
 project(':capacitor-app').projectDir = new File('../node_modules/@capacitor/app/android')
 
@@ -25,3 +31,6 @@ project(':capacitor-splash-screen').projectDir = new File('../node_modules/@capa
 
 include ':capacitor-status-bar'
 project(':capacitor-status-bar').projectDir = new File('../node_modules/@capacitor/status-bar/android')
+
+include ':capacitor-toast'
+project(':capacitor-toast').projectDir = new File('../node_modules/@capacitor/toast/android')
