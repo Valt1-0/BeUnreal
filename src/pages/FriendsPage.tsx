@@ -39,6 +39,7 @@ const FriendsPage: React.FC = () => {
     usersNotFollowed,
     followingUsers,
     pendingFriendRequests,
+    pendingFriendRequestsRealtime,
   } = store;
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedSegment, setSelectedSegment] = useState("suggestions");
@@ -48,7 +49,7 @@ const FriendsPage: React.FC = () => {
 
   async function searchNext($event: CustomEvent<void>) {
     const lastUser = usersNotFollowed.slice(-1)[0];
-    const users = await store.doGetUsersNotFollowed(undefined, lastUser);
+    const users = await store.doGetUsersNotFollowed();
 
     if (usersNotFollowed.length < 10) {
       // Remplacer 10 par le nombre d'utilisateurs que vous voulez par page
@@ -77,11 +78,11 @@ useEffect(() => {
   };
 
   const FetchAllUserFriends = async () => {
-    unsubscribes["friends"] = await store.doGetUsersNotFollowed("follow");
+    unsubscribes["friends"] = await store.doGetFollowingUsers();
   };
 
   const FetchAllUserRequest = async () => {
-    unsubscribes["requests"] = await store.doGetUsersNotFollowed("Requests");
+     unsubscribes["requests"] = await store.doGetPendingFriendRequestsRealtime();
   };
 
   if (selectedSegment == "suggestions") FetchAllUserSuggestions();
@@ -94,6 +95,11 @@ useEffect(() => {
     }
   };
 }, [selectedSegment, searchTerm]);
+
+  const handleUnFollowUser = async (unfollowUserId: string) => {
+    await store.doUnFollow(unfollowUserId);
+  }
+
 
   const handleFollowUser = async (user: User) => {
     await store.doFollowUser(user);
@@ -138,15 +144,16 @@ useEffect(() => {
                     className="border rounded text-white w-1/4"
                     slot="end"
                     disabled={
-                      user.status === "follow" || user.status === "pending"
+                      user.status === "followed" || user.status === "pending"
                     }
                     onClick={() => {
                       if (user.status === "notFollowed") {
+                        console.log("follow", user.uid);
                         handleFollowUser(user.uid);
                       }
                     }}
                   >
-                    {user.status === "follow"
+                    {user.status === "followed"
                       ? "Ami"
                       : user.status === "pending"
                       ? "En attente"
@@ -166,19 +173,29 @@ useEffect(() => {
         )}
         {selectedSegment == "friends" && (
           <IonList>
-            {_usersNotFollowed.map((user: any) => (
+            {followingUsers.map((user: any) => (
               <IonItem key={user.uid}>
                 <IonAvatar slot="start">
                   <img src={user.avatar} />
                 </IonAvatar>
                 <IonLabel>{user.username}</IonLabel>
+                <IonButton
+                  fill="clear"
+                  className="border rounded text-white w-1/4"
+                  slot="end"
+                  onClick={() => {
+                    handleUnFollowUser(user.uid);
+                  }}
+                >
+                  Supprimer de mes amis
+                </IonButton>
               </IonItem>
             ))}
           </IonList>
         )}
         {selectedSegment == "requests" && (
           <IonList>
-            {_usersNotFollowed.map((user: any) => (
+            {pendingFriendRequestsRealtime.map((user: any) => (
               <IonItem key={user.uid}>
                 <IonAvatar slot="start">
                   <img src={user.avatar} />

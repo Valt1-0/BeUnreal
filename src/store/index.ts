@@ -50,7 +50,7 @@ export class Store {
       deleteItem: action,
       doCreateChat: action,
       doSendMessage: action,
-      doGetUsersNotFollowed: action,
+      //doGetUsersNotFollowed: action,
       doFollowUser: action,
       doGetFollowingUsers: action,
       doGetPendingFriendsRequests: action,
@@ -58,6 +58,7 @@ export class Store {
       doRejectFriendRequest: action,
       pendingFriendRequestsRealtime: observable,
       doGetPendingFriendRequestsRealtime: action,
+      doUnFollow: action,
     });
 
     this.getUsers = this.getUsers.bind(this);
@@ -272,13 +273,57 @@ export class Store {
     }
   }
 
-  doGetUsersNotFollowed(_status?: string, lastUser?: DocumentSnapshot) {
+  // doGetUsersNotFollowed(_status?: string, lastUser?: DocumentSnapshot) {
+  //   try {
+  //     // Appeler getUsersFollowWithStatus et stocker la fonction de désinscription
+  //     const unsubscribe =
+  //       firebaseService.getUsersFollowWithStatus(
+  //         this.activeUser.uid,
+  //         _status,
+  //         lastUser,
+  //         (users) => {
+  //           // Mettre à jour usersNotFollowed chaque fois que les utilisateurs sont modifiés
+  //           runInAction(() => {
+  //             this.usersNotFollowed = users;
+  //           });
+  //         }
+  //       );
+
+  //     // Retourner la fonction de désinscription pour permettre d'arrêter l'écoute des modifications
+  //     return unsubscribe;
+  //   } catch (err) {
+  //     console.error("Error getting users: ", err);
+  //     return null;
+  //   }
+  // }
+
+  async doFollowUser(_userId: string) {
+    try {
+      await firebaseService.sendFriendRequest(this.activeUser.uid, _userId);
+      return true;
+    } catch (err) {
+      console.error("Error following user: ", err);
+      return false;
+    }
+  }
+
+  doGetFollowingUsers = (_userId?: string) => {
+    const useruid = _userId || this.activeUser.uid;
+    const unsubscribe = firebaseService.getFollowing(useruid, (users) => {
+      runInAction(() => {
+        this.followingUsers = users;
+      });
+    });
+
+    // Stocker la fonction de désinscription pour pouvoir arrêter l'écoute plus tard
+    return unsubscribe;
+  };
+
+  doGetUsersNotFollowed() {
     try {
       // Appeler getUsersFollowWithStatus et stocker la fonction de désinscription
-      const unsubscribe = firebaseService.getUsersFollowWithStatus(
+      const unsubscribe = firebaseService.getUnfollowedUsersWithPendingStatus(
         this.activeUser.uid,
-        _status,
-        lastUser,
         (users) => {
           // Mettre à jour usersNotFollowed chaque fois que les utilisateurs sont modifiés
           runInAction(() => {
@@ -291,30 +336,6 @@ export class Store {
       return unsubscribe;
     } catch (err) {
       console.error("Error getting users: ", err);
-      return null;
-    }
-  }
-
-  async doFollowUser(_userId: string) {
-    try {
-      await firebaseService.sendFriendRequest(this.activeUser.uid, _userId);
-      return true;
-    } catch (err) {
-      console.error("Error following user: ", err);
-      return false;
-    }
-  }
-
-  async doGetFollowingUsers(_userId?: string) {
-    const useruid = _userId || this.activeUser.uid;
-    try {
-      const users = await firebaseService.getFollowing(useruid);
-      runInAction(() => {
-        this.followingUsers = users;
-      });
-      return users;
-    } catch (err) {
-      console.error("Error to get following user: ", err);
       return null;
     }
   }
@@ -363,6 +384,19 @@ export class Store {
           });
         }
       );
+    }
+  }
+
+  async doUnFollow(unfollowUserId: string) {
+    console.log("test unfollow");
+    try {
+      return await firebaseService.unfollowUser(
+        this.activeUser.uid,
+        unfollowUserId
+      );
+    } catch (err) {
+      console.error("Error to unfollow user: ", err);
+      return false;
     }
   }
 }
