@@ -1,15 +1,12 @@
-
-.cameraLoader {
-    position: absolute !important;
-    top: 20%;
-    width: 90%;
-    height: 40%;
-    border-radius: 25px;
-    box-shadow: 0 0 0 600px rgba(0, 0, 0, 1);
-    left: 5%;
-}
+/* .cameraLoader {
+  position: relative !important;
+  width: 80%;
+  height: 60%;
+  border-radius: 20px;
+  box-shadow: 0 0 0 600px rgba(0, 0, 0, 1);
+} */
 
 body.camera-active {
-    --background: transparent;
-    --ion-background-color: transparent;
+  --background: transparent;
+  --ion-background-color: transparent;
 }

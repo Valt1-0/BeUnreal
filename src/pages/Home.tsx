@@ -3,16 +3,9 @@ import {
   CameraPreview,
   CameraPreviewOptions,
 } from "@capacitor-community/camera-preview";
-import {
-  IonContent,
-  IonPage,
-  IonButton,
-  IonHeader,
-  IonToolbar,
-} from "@ionic/react";
+import { IonContent, IonPage } from "@ionic/react";
 import { MobXProviderContext } from "mobx-react";
 import * as FAIcons from "react-icons/fa";
-import "./home.css";
 import Header from "../components/Header";
 import {
   PushNotificationSchema,
@@ -23,19 +16,21 @@ import {
 
 import { Toast } from "@capacitor/toast";
 
+import { StatusBar } from "@capacitor/status-bar";
+
 const Home: React.FC = () => {
   const { store } = React.useContext(MobXProviderContext);
   const [imageData, setImageData] = useState("");
   const [isCameraRunning, setIsCameraRunning] = useState(false);
 
-  const cameraPreviewOptions = {
+  const cameraPreviewOptions: CameraPreviewOptions = {
     position: "rear",
     lockAndroidOrientation: true,
     parent: "cameraPreview",
     className: "cameraLoader",
     toBack: true,
     x: 0,
-    y: 200,
+    y: 0,
     width: window.screen.width,
     height: window.screen.height / 2,
   };
@@ -109,9 +104,11 @@ const Home: React.FC = () => {
       if (bodyElement) {
         bodyElement.classList.add("camera-active");
       }
-      //document.body.style.backgroundColor = "transparent";
+      StatusBar.setOverlaysWebView({ overlay: true });
+      document.body.style.backgroundColor = "transparent";
       document.documentElement.style.backgroundColor = "transparent";
     });
+
     return () => {
       CameraPreview.stop().then(() => {
         setIsCameraRunning(false);
@@ -119,44 +116,44 @@ const Home: React.FC = () => {
         if (bodyElement) {
           bodyElement.classList.remove("camera-active");
         }
-        // document.body.style.backgroundColor = "";
-        // document.documentElement.style.backgroundColor = "";
+        StatusBar.setOverlaysWebView({ overlay: false });
       });
     };
   }, []);
 
   return (
     <IonPage>
-      <Header />
-      <IonContent fullscreen={false}>
-        <div
-          id="cameraPreview"
-          className="absolute flex w-full h-full justify-center "
-        ></div>
-        <div className="cameraLoader"></div>
-        <div className="h-screen flex relative justify-center top-[25%] items-center  z-999">
-          <button
-            className="w-16 h-16 rounded-full flex text-white justify-center items-center border border-white  z-999"
-            onClick={() => {
-              if (isCameraRunning) {
-                CameraPreview.capture({ quality: 100 }).then((result) => {
-                  setImageData(result.value);
-                });
-              }
-            }}
-          >
-            <FAIcons.FaCamera size={28} className="text-red" />{" "}
-          </button>
+      <IonContent fullscreen={true}>
+        <div id="cameraPreview">
+          {imageData && (
+            <div className="relative w-full h-full flex justify-center items-center">
+              <button
+                className="absolute top-4 left-4 text-white text-3xl"
+                onClick={() => setImageData("")}
+              >
+                &times;
+              </button>
+              <img
+                src={`data:image/jpeg;base64,${imageData}`}
+                alt="captured"
+                className="h-auto w-auto max-w-full max-h-full"
+              />
+            </div>
+          )}
         </div>
-        {imageData && (
-          <div className="h-screen flex justify-center items-center">
-            <img
-              src={`data:image/jpeg;base64,${imageData}`}
-              alt="captured"
-              className="h-64 w-64"
-            />
-          </div>
-        )}
+        <div className="cameraLoader"></div>
+        <button
+          className="absolute bottom-10 left-1/2 transform -translate-x-1/2 w-16 h-16 bg-black text-white rounded-full flex items-center justify-center"
+          onClick={() => {
+            if (isCameraRunning) {
+              CameraPreview.capture({ quality: 100 }).then((result) => {
+                setImageData(result.value);
+              });
+            }
+          }}
+        >
+          <FAIcons.FaCamera size={28} />
+        </button>
       </IonContent>
     </IonPage>
   );
