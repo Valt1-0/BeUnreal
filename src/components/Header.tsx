@@ -26,7 +26,7 @@ const Header = () => {
       <div className="flex justify-around items-center">
         {authenticatedUser && (
           <div className="w-10 h-10 flex justify-center items-center">
-            <IonButton fill="clear" routerLink="/friends">
+            <IonButton fill="clear" routerLink="/friends" routerDirection="back">
               <FAIcons.FaUserFriends size={25} className="text-white" />
               {pendingFriendRequests > 0 && (
                 <IonBadge color={"danger"}>{pendingFriendRequests}</IonBadge>
