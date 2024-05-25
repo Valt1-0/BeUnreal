@@ -143,7 +143,7 @@ const Home: React.FC = () => {
         </div>
         <div className="cameraLoader"></div>
         <button
-          className="absolute bottom-10 left-1/2 transform -translate-x-1/2 w-16 h-16 bg-blue-500 text-white rounded-full flex items-center justify-center"
+          className="absolute bottom-10 left-1/2 transform -translate-x-1/2 w-16 h-16 bg-black text-white rounded-full flex items-center justify-center"
           onClick={() => {
             if (isCameraRunning) {
               CameraPreview.capture({ quality: 100 }).then((result) => {
