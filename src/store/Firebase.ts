@@ -31,6 +31,7 @@ import {
   limit,
   DocumentSnapshot,
   writeBatch,
+  serverTimestamp,
 } from "firebase/firestore";
 import {
   getStorage,
@@ -724,6 +725,30 @@ export const getUnfollowedUsersWithPendingStatus = async (
   );
 };
 
+
+
+export const saveBeReal = async (
+  uid: string,
+  location: { latitude: number; longitude: number },
+  imageUrl: string
+) => {
+  const timestamp = serverTimestamp();
+  const timestampUrl = Date.now();
+  // Upload the image to Firebase Storage
+  const storageRef = ref(storage, `images/${uid}/${timestampUrl}.jpeg`);
+  await uploadString(storageRef, imageUrl, "data_url");
+  const url = await getDownloadURL(storageRef);
+
+  // Save the image data to Firestore
+  const docData = {
+    uid,
+    timestamp,
+    location,
+    url,
+  };
+
+  await addDoc(collection(db, "BeReal"), docData);
+};
 // export const getUsersFollowWithStatus = (
 //   currentUserId: string,
 //   status?: string,

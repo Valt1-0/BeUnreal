@@ -70,27 +70,6 @@ const PublicRoutes: React.FC = () => {
 const App: React.FC = () => {
   const { store } = React.useContext(MobXProviderContext);
 
-
-    // useEffect(() => {
-    //   // Commencez à écouter les demandes d'amis en attente
-    //   store.doGetPendingFriendRequestsRealtime();
-
-    //   // Écoutez les changements dans l'observable
-    //   const disposer = autorun(() => {
-    //     const requests = toJS(store.pendingFriendRequestsRealtime);
-    //     console.log("requests", requests);
-    //     if (requests.length > 0) {
-    //       // Envoyez une notification pour chaque nouvelle demande d'ami
-    //       requests.forEach((request: { username: string }) => {
-    //         new Notification(`Nouvelle demande d'ami de ${request.username}`);
-    //       });
-    //     }
-    //   });
-
-    //   // Arrêtez d'écouter les changements lorsque le composant est démonté
-    //   return () => disposer();
-    // }, [store, store.authenticatedUser]);
-
   return !store.authCheckComplete ? (
     <IonApp>
       <IonLoading message="Starting App..." />

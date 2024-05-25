@@ -3,7 +3,7 @@ import {
   CameraPreview,
   CameraPreviewOptions,
 } from "@capacitor-community/camera-preview";
-import { IonContent, IonPage } from "@ionic/react";
+import { IonButton, IonContent, IonIcon, IonPage } from "@ionic/react";
 import { MobXProviderContext } from "mobx-react";
 import * as FAIcons from "react-icons/fa";
 import Header from "../components/Header";
@@ -13,11 +13,13 @@ import {
   Token,
   ActionPerformed,
 } from "@capacitor/push-notifications";
+import { Geolocation } from "@capacitor/geolocation";
 
 import { Toast } from "@capacitor/toast";
-
+import { isPlatform } from "@ionic/react";
 import { StatusBar } from "@capacitor/status-bar";
-
+import "./home.css";
+import { sendSharp } from "ionicons/icons";
 const Home: React.FC = () => {
   const { store } = React.useContext(MobXProviderContext);
   const [imageData, setImageData] = useState("");
@@ -29,18 +31,21 @@ const Home: React.FC = () => {
     parent: "cameraPreview",
     className: "cameraLoader",
     toBack: true,
-    x: 0,
-    y: 0,
+    enableZoom: true,
     width: window.screen.width,
-    height: window.screen.height / 2,
+    height: window.screen.height,
   };
 
   const nullEntry: any[] = [];
   const [notifications, setnotifications] = useState(nullEntry);
 
   useEffect(() => {
-    registerNotifications();
-    addListeners();
+    if (isPlatform("hybrid")) {
+      registerNotifications();
+      addListeners();
+    
+    checkLocationPermissions();
+    }
   }, []);
 
   const addListeners = async () => {
@@ -70,6 +75,18 @@ const Home: React.FC = () => {
         );
       }
     );
+  };
+
+  const checkLocationPermissions = () => {
+    Geolocation.requestPermissions().then((result) => {
+      if (result.location === "granted") {
+        console.log("Location permission granted");
+      } else {
+        showToast(
+          "Location permission denied. Please enable it in the app settings."
+        );
+      }
+    });
   };
 
   const registerNotifications = async () => {
@@ -123,37 +140,69 @@ const Home: React.FC = () => {
 
   return (
     <IonPage>
-      <IonContent fullscreen={true}>
-        <div id="cameraPreview">
-          {imageData && (
-            <div className="relative w-full h-full flex justify-center items-center">
-              <button
-                className="absolute top-4 left-4 text-white text-3xl"
-                onClick={() => setImageData("")}
-              >
-                &times;
-              </button>
-              <img
-                src={`data:image/jpeg;base64,${imageData}`}
-                alt="captured"
-                className="h-auto w-auto max-w-full max-h-full"
-              />
-            </div>
-          )}
-        </div>
-        <div className="cameraLoader"></div>
-        <button
-          className="absolute bottom-10 left-1/2 transform -translate-x-1/2 w-16 h-16 bg-black text-white rounded-full flex items-center justify-center"
-          onClick={() => {
-            if (isCameraRunning) {
-              CameraPreview.capture({ quality: 100 }).then((result) => {
-                setImageData(result.value);
-              });
-            }
-          }}
-        >
-          <FAIcons.FaCamera size={28} />
-        </button>
+      <IonContent fullscreen={true} className="w-full h-full">
+        {imageData ? (
+          <div className=" w-full h-full">
+            <button
+              className="absolute top-7 left-4 text-white text-3xl z-10"
+              onClick={() => setImageData("")}
+            >
+              &times;
+            </button>
+            <img
+              src={`data:image/jpeg;base64,${imageData}`}
+              alt="captured"
+              className=" absolute max-w-full max-h-full w-full h-full object-cover"
+            />
+          </div>
+        ) : (
+          <div id="cameraPreview"></div>
+        )}
+        {!imageData ? (
+          <button
+            className="absolute bottom-10 left-1/2 transform -translate-x-1/2 w-20 h-20 border-8 border-white border-solid rounded-full flex items-center justify-center bg-transparent"
+            onClick={async () => {
+              if (isCameraRunning) {
+                CameraPreview.captureSample({
+                  quality: 100,
+                }).then((result) => {
+                  setImageData(result.value);
+                });
+              }
+            }}
+          ></button>
+        ) : (
+          <div className="flex justify-end  pr-6">
+            <IonButton
+              className="absolute bottom-10  w-auto h-16 bg-black text-white rounded-full "
+              onClick={async () => {
+                let coordinates = { coords: { latitude: 0, longitude: 0 } };
+                if (isPlatform("hybrid")) {
+                  coordinates = await Geolocation.getCurrentPosition();
+                }
+               const save = await  store.doSaveBeReal(
+                  {
+                    latitude: coordinates.coords.latitude,
+                    longitude: coordinates.coords.longitude,
+                  },
+                  `data:image/jpeg;base64,${imageData}`
+                );
+                  console.log(save);
+                if (save) {
+                  showToast("Image saved successfully");
+                   setImageData("");
+                } else {
+                  showToast("Image save failed");
+                }
+
+              }}
+              fill="clear"
+            >
+              Enregistrer
+              <IonIcon icon={sendSharp} className="px-2" />
+            </IonButton>
+          </div>
+        )}
       </IonContent>
     </IonPage>
   );

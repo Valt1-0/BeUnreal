@@ -59,6 +59,7 @@ export class Store {
       pendingFriendRequestsRealtime: observable,
       doGetPendingFriendRequestsRealtime: action,
       doUnFollow: action,
+      doSaveBeReal : action,
     });
 
     this.getUsers = this.getUsers.bind(this);
@@ -396,6 +397,23 @@ export class Store {
       );
     } catch (err) {
       console.error("Error to unfollow user: ", err);
+      return false;
+    }
+  }
+
+  async doSaveBeReal(
+    location: { latitude: number; longitude: number },
+    imageUrl: string
+  ) {
+    try {
+       await firebaseService.saveBeReal(
+        this.activeUser.uid,
+        location,
+        imageUrl
+      );
+      return true;
+    } catch (err) {
+      console.error("Error to save be real: ", err);
       return false;
     }
   }
