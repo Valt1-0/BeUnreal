@@ -593,76 +593,89 @@ export const getFollowing = async (userId: string) => {
   console.log(following);
   return following;
 };
-
-export const getUsersFollowWithStatus = async (
+export const getUsersFollowWithStatus = (
   currentUserId: string,
   status?: string,
-  lastUser?: DocumentSnapshot
+  lastUser?: DocumentSnapshot,
+  callback?: (users: any) => void
 ) => {
-  const allUsers = await getUsers();
-  const followingUsers: { uid: string; username: any }[] = await getFollowing(
-    currentUserId
-  );
+  // Créer une référence à la collection 'friendRequests'
+  const friendRequestsRef = collection(db, "friendRequests");
 
-  let usersWithStatus;
-  if (status == "Requests") {
-    const pendingFriendRequests = await getPendingFriendRequests(currentUserId);
-   
-     usersWithStatus = pendingFriendRequests
-    ;
-  } else {
-    // Récupérer toutes les demandes d'amis en attente de l'utilisateur actuel
-    const requestsSnapshot = await getDocs(
-      query(
-        collection(db, "friendRequests"),
-        where("from", "==", currentUserId),
-        where("status", "==", "pending")
-      )
-    );
-    const pendingFollowRequests = requestsSnapshot.docs.map((doc) =>
-      doc.data()
-    );
-    const pendingFollowUserIds = pendingFollowRequests.map(
-      (request) => request.to
+  // Créer un observateur sur la collection 'friendRequests'
+  const unsubscribe = onSnapshot(friendRequestsRef, async (snapshot) => {
+    const allUsers = await getUsers();
+    const followingUsers: { uid: string; username: any }[] = await getFollowing(
+      currentUserId
     );
 
-    usersWithStatus = allUsers
-      .filter((user) => user.uid !== currentUserId) // Exclure l'utilisateur actuel
-      .map((user) => {
-        let status;
-        if (
-          followingUsers.some((followingUser) => followingUser.uid === user.uid)
-        ) {
-          status = "follow";
-        } else if (pendingFollowUserIds.includes(user.uid)) {
-          status = "pending";
-        } else {
-          status = "notFollowed";
-        }
-
-        return {
-          ...user,
-          status,
-        };
-      });
-
-    // Filtrer les utilisateurs par statut si un statut est fourni
-    if (status) {
-      usersWithStatus = usersWithStatus.filter(
-        (user) => user.status === status
+    let usersWithStatus;
+    if (status == "Requests") {
+      const pendingFriendRequests = await getPendingFriendRequests(
+        currentUserId
       );
+      usersWithStatus = pendingFriendRequests;
+    } else {
+      const requestsSnapshot = await getDocs(
+        query(
+          friendRequestsRef,
+          where("from", "==", currentUserId),
+          where("status", "==", "pending")
+        )
+      );
+      const pendingFollowRequests = requestsSnapshot.docs.map((doc) =>
+        doc.data()
+      );
+      const pendingFollowUserIds = pendingFollowRequests.map(
+        (request) => request.to
+      );
+
+      usersWithStatus = allUsers
+        .filter((user) => user.uid !== currentUserId) // Exclure l'utilisateur actuel
+        .map((user) => {
+          let status;
+          if (
+            followingUsers.some(
+              (followingUser) => followingUser.uid === user.uid
+            )
+          ) {
+            status = "follow";
+          } else if (pendingFollowUserIds.includes(user.uid)) {
+            status = "pending";
+          } else {
+            status = "notFollowed";
+          }
+
+          return {
+            ...user,
+            status,
+          };
+        });
+
+      // Filtrer les utilisateurs par statut si un statut est fourni
+      if (status) {
+        usersWithStatus = usersWithStatus.filter(
+          (user) => user.status === status
+        );
+      }
     }
-  }
 
+    // Pagination
+    if (lastUser) {
+      const index = usersWithStatus.findIndex(
+        (user) => "uid" in user && user.uid === lastUser.id
+      );
+      usersWithStatus = usersWithStatus.slice(index + 1, index + 1 + 10);
+    } else {
+      usersWithStatus = usersWithStatus?.slice(0, 10);
+    }
+    if (callback) {
+      callback(usersWithStatus);
+    }
+    console.log("usersWithStatus", usersWithStatus);
+    return usersWithStatus;
+  });
 
-  // Pagination
-  if (lastUser ) {
-    const index = usersWithStatus.findIndex((user) => 'uid' in user && user.uid === lastUser.id);
-    usersWithStatus = usersWithStatus.slice(index + 1, index + 1 + 10);
-  } else {
-  
-    usersWithStatus = usersWithStatus?.slice(0, 10);
-  }
-  console.log("usersWithStatus", usersWithStatus);
-  return usersWithStatus;
+  // Retourner la fonction de désinscription pour permettre d'arrêter l'écoute des modifications
+  return unsubscribe;
 };

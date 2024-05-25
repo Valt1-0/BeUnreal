@@ -69,23 +69,31 @@ const FriendsPage: React.FC = () => {
     setUsersNotFollowed(usersNotFollowed);
   }, [usersNotFollowed]);
 
-  useEffect(() => {
-    const FetchAllUserSuggestions = async () => {
-      await store.doGetUsersNotFollowed();
-    };
+useEffect(() => {
+  const unsubscribes: { [key: string]: any } = {};
 
-    const FetchAllUserFriends = async () => {
-      await store.doGetUsersNotFollowed("follow");
-    };
+  const FetchAllUserSuggestions = async () => {
+    unsubscribes["suggestions"] = await store.doGetUsersNotFollowed();
+  };
 
-    const FetchAllUserRequest = async () => {
-      await store.doGetUsersNotFollowed("Requests");
-    };
+  const FetchAllUserFriends = async () => {
+    unsubscribes["friends"] = await store.doGetUsersNotFollowed("follow");
+  };
 
-    if (selectedSegment == "suggestions") FetchAllUserSuggestions();
-    else if (selectedSegment == "friends") FetchAllUserFriends();
-    else if (selectedSegment == "requests") FetchAllUserRequest();
-  }, [selectedSegment, searchTerm]);
+  const FetchAllUserRequest = async () => {
+    unsubscribes["requests"] = await store.doGetUsersNotFollowed("Requests");
+  };
+
+  if (selectedSegment == "suggestions") FetchAllUserSuggestions();
+  else if (selectedSegment == "friends") FetchAllUserFriends();
+  else if (selectedSegment == "requests") FetchAllUserRequest();
+
+  return () => {
+    if (unsubscribes[selectedSegment]) {
+      unsubscribes[selectedSegment]();
+    }
+  };
+}, [selectedSegment, searchTerm]);
 
   const handleFollowUser = async (user: User) => {
     await store.doFollowUser(user);
