@@ -172,7 +172,7 @@ const Home: React.FC = () => {
             }}
           ></button>
         ) : (
-          <div className="flex justify-end  pr-6">
+          <div className="flex justify-end pr-6">
             <IonButton
               className="absolute bottom-10 w-auto h-16 bg-black text-white rounded-full "
               onClick={async () => {
