@@ -7,8 +7,14 @@ import {
 } from "mobx";
 import { get, set, entries, remove } from "mobx";
 import * as firebaseService from "./Firebase";
-import { DocumentSnapshot, serverTimestamp } from "firebase/firestore";
+
+import { UserService } from "../services/user";
+import {FriendsService} from "../services/friends";
+  const userService = new UserService();
+  const friendsService = new FriendsService();
+  
 export class Store {
+
   activeUser: any = null;
   loading: boolean = false;
   authCheckComplete: boolean = false;
@@ -36,8 +42,7 @@ export class Store {
       followingUsers: observable,
       pendingFriendRequests: observable,
       authenticatedUser: computed,
-      doCheckAuth: computed,
-      itemEntries: computed,
+      // doCheckAuth: computed,
       getTchatMessages: action,
       getTchats: action,
       getUsers: action,
@@ -45,33 +50,32 @@ export class Store {
       doLogin: action,
       doLogout: action,
       loadData: action,
-      itemByKey: action,
-      addItem: action,
-      deleteItem: action,
+      // addItem: action,
+      // deleteItem: action,
       doCreateChat: action,
       doSendMessage: action,
       //doGetUsersNotFollowed: action,
       doFollowUser: action,
       doGetFollowingUsers: action,
-      doGetPendingFriendsRequests: action,
+      //doGetPendingFriendsRequests: action,
       doAcceptFriendRequest: action,
       doRejectFriendRequest: action,
       pendingFriendRequestsRealtime: observable,
       doGetPendingFriendRequestsRealtime: action,
       doUnFollow: action,
-      doSaveBeReal : action,
+      doSaveBeReal: action,
     });
 
     this.getUsers = this.getUsers.bind(this);
     this.initializeStore().then((u: any) => {
-      this.activeUser = u;
-      this.authCheckComplete = true;
+    this.activeUser = u;
+    this.authCheckComplete = true;
     });
   }
 
   handleAuthedUser = async (_authUser: any) => {
     if (_authUser) {
-      let userAcctInfo = await firebaseService.getUserProfile();
+      let userAcctInfo = await userService.getUserProfile();
       console.log("setting active user");
       this.activeUser = { ..._authUser, ...userAcctInfo };
 
@@ -83,8 +87,7 @@ export class Store {
   };
 
   async initializeStore() {
-    return firebaseService
-      .authCheck(this.handleAuthedUser)
+    return userService.authCheck(this.handleAuthedUser)
       .then((_user: any) => {
         return _user;
       })
@@ -95,13 +98,13 @@ export class Store {
       });
   }
 
-  get doCheckAuth() {
-    if (firebaseService.getCurrentUser()) {
-      return this.activeUser;
-    } else {
-      return null;
-    }
-  }
+  // get doCheckAuth() {
+  //   if (firebaseService.getCurrentUser()) {
+  //     return this.activeUser;
+  //   } else {
+  //     return null;
+  //   }
+  // }
 
   getTchatMessages(_chatId: string, _userID: string) {
     return firebaseService.getMessages(_chatId, _userID, (messages: any[]) => {
@@ -125,13 +128,9 @@ export class Store {
     return this.tchats;
   }
 
-  get itemEntries() {
-    return entries(this.items);
-  }
-
   async getUsers(username?: string) {
     try {
-      const users = await firebaseService.getUsers(username);
+      const users = await userService.getUsers(username);
       console.log("userss :", users);
       runInAction(() => {
         this.users = users;
@@ -142,13 +141,10 @@ export class Store {
       return null;
     }
   }
-  itemByKey(_key: any) {
-    return get(this.items, _key);
-  }
 
   doLogin(_username: string, _password: string) {
     if (_username.length) {
-      return firebaseService
+      return userService
         .loginWithEmail(_username, _password)
         .then(
           async (_result: any) => {
@@ -168,7 +164,7 @@ export class Store {
 
   async doCreateUser(_params: any) {
     try {
-      let newUser = await firebaseService.registerUser({
+      let newUser = await userService.registerUser({
         email: _params.email,
         password: _params.password,
         username: _params.username,
@@ -183,11 +179,11 @@ export class Store {
 
   doLogout() {
     this.activeUser = null;
-    return firebaseService.logOut();
+    return userService.logOut();
   }
 
   loadData() {
-    return firebaseService
+    return userService
       .queryObjectCollection({ collectionName: "items" })
       .then(
         (_result: any) => {
@@ -211,47 +207,47 @@ export class Store {
       });
   }
 
-  addItem(_data: any) {
-    return firebaseService
-      .addObjectToCollection({ collectionName: "items", objectData: _data })
-      .then(
-        (_result: any) => {
-          return runInAction(() => {
-            set(this.items, _result.id, _result);
-            return _result;
-          });
-        },
-        (err: any) => {
-          console.log(err);
-          return err;
-        }
-      )
-      .catch((e: any) => {
-        console.log(e);
-        return e;
-      });
-  }
+  // addItem(_data: any) {
+  //   return firebaseService
+  //     .addObjectToCollection({ collectionName: "items", objectData: _data })
+  //     .then(
+  //       (_result: any) => {
+  //         return runInAction(() => {
+  //           set(this.items, _result.id, _result);
+  //           return _result;
+  //         });
+  //       },
+  //       (err: any) => {
+  //         console.log(err);
+  //         return err;
+  //       }
+  //     )
+  //     .catch((e: any) => {
+  //       console.log(e);
+  //       return e;
+  //     });
+  // }
 
-  deleteItem(_data: any) {
-    return firebaseService
-      .removeObjectFromCollection({ collection: "items", objectId: _data.id })
-      .then(
-        (_result: any) => {
-          return runInAction(() => {
-            remove(this.items, _data.id);
-            return true;
-          });
-        },
-        (err: any) => {
-          console.log(err);
-          return err;
-        }
-      )
-      .catch((e: any) => {
-        console.log(e);
-        return e;
-      });
-  }
+  // deleteItem(_data: any) {
+  //   return firebaseService
+  //     .removeObjectFromCollection({ collection: "items", objectId: _data.id })
+  //     .then(
+  //       (_result: any) => {
+  //         return runInAction(() => {
+  //           remove(this.items, _data.id);
+  //           return true;
+  //         });
+  //       },
+  //       (err: any) => {
+  //         console.log(err);
+  //         return err;
+  //       }
+  //     )
+  //     .catch((e: any) => {
+  //       console.log(e);
+  //       return e;
+  //     });
+  // }
 
   async doCreateChat(_participants: string[]) {
     try {
@@ -300,7 +296,7 @@ export class Store {
 
   async doFollowUser(_userId: string) {
     try {
-      await firebaseService.sendFriendRequest(this.activeUser.uid, _userId);
+      await friendsService.sendFriendRequest(this.activeUser.uid, _userId);
       return true;
     } catch (err) {
       console.error("Error following user: ", err);
@@ -310,7 +306,7 @@ export class Store {
 
   doGetFollowingUsers = (_userId?: string) => {
     const useruid = _userId || this.activeUser.uid;
-    const unsubscribe = firebaseService.getFollowing(useruid, (users) => {
+    const unsubscribe = friendsService.getFollowing(useruid, (users) => {
       runInAction(() => {
         this.followingUsers = users;
       });
@@ -323,7 +319,7 @@ export class Store {
   doGetUsersNotFollowed() {
     try {
       // Appeler getUsersFollowWithStatus et stocker la fonction de désinscription
-      const unsubscribe = firebaseService.getUnfollowedUsersWithPendingStatus(
+      const unsubscribe = friendsService.getUnfollowedUsersWithPendingStatus(
         this.activeUser.uid,
         (users) => {
           // Mettre à jour usersNotFollowed chaque fois que les utilisateurs sont modifiés
@@ -341,23 +337,23 @@ export class Store {
     }
   }
 
-  async doGetPendingFriendsRequests() {
-    const useruid = this.activeUser.uid;
-    try {
-      const users = await firebaseService.getPendingFriendRequests(useruid);
-      runInAction(() => {
-        this.pendingFriendRequests = users;
-      });
-      return users;
-    } catch (err) {
-      console.error("Error to get following user: ", err);
-      return null;
-    }
-  }
+  // async doGetPendingFriendsRequests() {
+  //   const useruid = this.activeUser.uid;
+  //   try {
+  //     const users = await firebaseService.getPendingFriendRequests(useruid);
+  //     runInAction(() => {
+  //       this.pendingFriendRequests = users;
+  //     });
+  //     return users;
+  //   } catch (err) {
+  //     console.error("Error to get following user: ", err);
+  //     return null;
+  //   }
+  // }
 
   async doAcceptFriendRequest(_userId: string) {
     try {
-      await firebaseService.acceptFriendRequest(this.activeUser.uid, _userId);
+      await friendsService.acceptFriendRequest(this.activeUser.uid, _userId);
       return true;
     } catch (err) {
       console.error("Error to accept friend request: ", err);
@@ -367,7 +363,7 @@ export class Store {
 
   async doRejectFriendRequest(_userId: string) {
     try {
-      await firebaseService.rejectFriendRequest(this.activeUser.uid, _userId);
+      await friendsService.rejectFriendRequest(this.activeUser.uid, _userId);
       return true;
     } catch (err) {
       console.error("Error to reject friend request: ", err);
@@ -376,8 +372,7 @@ export class Store {
   }
   doGetPendingFriendRequestsRealtime() {
     if (this.activeUser) {
-      console.log("testtt");
-      firebaseService.getPendingFriendRequestsRealtime(
+      friendsService.getPendingFriendRequestsRealtime(
         this.activeUser.uid,
         (requests: any[]) => {
           runInAction(() => {
@@ -391,7 +386,7 @@ export class Store {
   async doUnFollow(unfollowUserId: string) {
     console.log("test unfollow");
     try {
-      return await firebaseService.unfollowUser(
+      return await friendsService.unfollowUser(
         this.activeUser.uid,
         unfollowUserId
       );
@@ -406,15 +401,22 @@ export class Store {
     imageUrl: string
   ) {
     try {
-       await firebaseService.saveBeReal(
-        this.activeUser.uid,
-        location,
-        imageUrl
-      );
+      await firebaseService.saveBeReal(this.activeUser.uid, location, imageUrl);
       return true;
     } catch (err) {
       console.error("Error to save be real: ", err);
       return false;
+    }
+  }
+
+  async doGetBeReal(_userId?:string) 
+  {
+    try {
+      const userId = _userId || this.activeUser.uid;
+      return await firebaseService.getBeReal(userId);
+    } catch (err) {
+      console.error("Error to get be real: ", err);
+      return null;
     }
   }
 }

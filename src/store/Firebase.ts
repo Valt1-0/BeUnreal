@@ -34,7 +34,6 @@ import {
   serverTimestamp,
 } from "firebase/firestore";
 import {
-
   getStorage,
   ref,
   uploadBytesResumable,
@@ -44,203 +43,216 @@ import {
 } from "firebase/storage";
 import config from "./../config";
 
-
 const firebaseConfig = config.firebaseConfig;
-
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 const storage = getStorage(app);
 
-export const authCheck = async (
-  _handleAuthedUser: (user: User | null) => Promise<any>
-) => {
-  return new Promise((resolve) => {
-    onAuthStateChanged(auth, async (user) => {
-      if (user != null) {
-        console.log("We are authenticated now!");
-        return resolve(await _handleAuthedUser(user));
-      } else {
-        console.log("We did not authenticate.");
-        _handleAuthedUser(null);
-        return resolve(null);
-      }
-    });
-  });
-};
 
-export const getUsers = async (username?: string) => {
-  const usersRef = collection(db, "users");
-  let q;
-
-  if (username) {
-    q = query(
-      usersRef,
-      orderBy("username"),
-      startAt(username),
-      endAt(username + "\uf8ff")
-    );
-  } else {
-    q = usersRef;
-  }
-
-  const userSnapshot = await getDocs(q);
-  const users = userSnapshot.docs.map((doc) => ({
-    uid: doc.id,
-    ...doc.data(),
-  }));
-  console.log("users: ", users);
-  return users;
-};
-
-export const loginWithEmail = (email: string, password: string) => {
-  return signInWithEmailAndPassword(auth, email, password);
-};
-
-export const getCurrentUser = () => {
-  return auth.currentUser;
-};
-
-export const logOut = () => {
-  return signOut(auth);
-};
-
-interface UserInfo {
-  username: string;
-  email: string;
-  password: string;
-}
-
-export const registerUser = (userInfo: UserInfo) => {
-  console.log("in registerUser");
-  return createUserWithEmailAndPassword(
-    auth,
-    userInfo.email,
-    userInfo.password
-  ).then((newUser) => {
-    let { email, username } = userInfo;
-    let userId = newUser.user.uid;
-
-    // Create an array of folder paths to be created
-    const folders = [`users/${userId}/beunreal/.empty`, `users/${userId}/profile/.empty`];
-
-    // Function to create empty folders
-    const createEmptyFolder = async (path: string) => {
-      const folderRef = ref(storage, path);
-      await uploadString(folderRef, ""); // Uploading an empty string creates a folder
-    };
-
-    // Create all empty folders
-    return Promise.all(folders.map(createEmptyFolder)).then(() => {
-      // Set user document in Firestore
-      return setDoc(doc(db, "users", userId), { email, username }).then(() => {
-        return { ...newUser.user, username };
-      });
-    });
-  });
-};
-
-export const getUserProfile = async () => {
-  let user = auth.currentUser;
-  console.log(user);
-
-  var userRef = doc(db, "users", user!.uid);
-
-  const docSnap = await getDoc(userRef);
-
-  if (docSnap.exists()) {
-    console.log("Document data:", docSnap.data());
-    return {
-      ...docSnap.data(),
-      id: user!.uid,
-    };
-  } else {
-    console.log("No such document!", user!.uid);
-    return null;
-  }
-};
-
-interface QueryParams {
-  collectionName: string;
-}
-interface Result {
-  id: string;
-  data: any;
-}
-
-export const queryObjectCollection = async ({
-  collectionName,
-}: QueryParams) => {
-  let currentUserId = auth.currentUser!.uid;
-  let collectionRef = collection(db, collectionName);
-
-  let results: Result[] = [];
-
-  const querySnapshot = await getDocs(collectionRef);
+export const getBeReal = async (uid: string) => {
+  const q = query(collection(db, "BeReal"), where("uid", "==", uid), orderBy("timestamp", "desc"));
+  const querySnapshot = await getDocs(q);
+  const beRealData:any[] = [];
   querySnapshot.forEach((doc) => {
-    results.push({
-      id: doc.id,
-      data: doc.data(),
-    });
+    beRealData.push(doc.data());
   });
-
-  return results;
+  return beRealData;
 };
 
-interface AddObjectParams {
-  collectionName: string;
-  objectData: any;
-}
 
-export const addObjectToCollection = async ({
-  collectionName,
-  objectData,
-}: AddObjectParams) => {
-  let currentUserId = auth.currentUser!.uid;
-  let collectionRef = collection(db, collectionName);
+// export const authCheck = async (
+//   _handleAuthedUser: (user: User | null) => Promise<any>
+// ) => {
+//   return new Promise((resolve) => {
+//     onAuthStateChanged(auth, async (user) => {
+//       if (user != null) {
+//         console.log("We are authenticated now!");
+//         return resolve(await _handleAuthedUser(user));
+//       } else {
+//         console.log("We did not authenticate.");
+//         _handleAuthedUser(null);
+//         return resolve(null);
+//       }
+//     });
+//   });
+// };
 
-  const docRef = await addDoc(collectionRef, {
-    owner: currentUserId,
-    content: { ...objectData },
-    created: new Date().getTime(),
-    updated: new Date().getTime(),
-  });
+// export const getUsers = async (username?: string) => {
+//   const usersRef = collection(db, "users");
+//   let q;
 
-  console.log(`addObjectToCollection ${collection} ${docRef}`);
+//   if (username) {
+//     q = query(
+//       usersRef,
+//       orderBy("username"),
+//       startAt(username),
+//       endAt(username + "\uf8ff")
+//     );
+//   } else {
+//     q = usersRef;
+//   }
 
-  const docSnap = await getDoc(docRef);
-  return { ...docSnap.data(), id: docRef.id };
-};
+//   const userSnapshot = await getDocs(q);
+//   const users = userSnapshot.docs.map((doc) => ({
+//     uid: doc.id,
+//     ...doc.data(),
+//   }));
+//   console.log("users: ", users);
+//   return users;
+// };
 
-interface RemoveObjectParams {
-  collection: string;
-  objectId: string;
-}
+// export const loginWithEmail = (email: string, password: string) => {
+//   return signInWithEmailAndPassword(auth, email, password);
+// };
 
-export const removeObjectFromCollection = async ({
-  collection,
-  objectId,
-}: RemoveObjectParams) => {
-  let currentUserId = auth.currentUser!.uid;
-  let docRef = doc(db, collection, objectId);
+// export const getCurrentUser = () => {
+//   return auth.currentUser;
+// };
 
-  await deleteDoc(docRef);
+// export const logOut = () => {
+//   return signOut(auth);
+// };
 
-  console.log(`removeObjectFromCollection ${collection} ${objectId}`);
-  return true;
-};
+// interface UserInfo {
+//   username: string;
+//   email: string;
+//   password: string;
+// }
 
-export const getByRef = async (_documentRef: DocumentReference) => {
-  const docSnap = await getDoc(_documentRef);
+// export const registerUser = async (userInfo: UserInfo) => {
+//   console.log("in registerUser");
+//   return createUserWithEmailAndPassword(
+//     auth,
+//     userInfo.email,
+//     userInfo.password
+//   ).then((newUser) => {
+//     let { email, username } = userInfo;
+//     let userId = newUser.user.uid;
 
-  if (docSnap.exists()) {
-    return { ...docSnap.data(), id: _documentRef.id };
-  } else {
-    console.log("No such document!");
-    return null;
-  }
-};
+//     // Create an array of folder paths to be created
+//     const folders = [
+//       `users/${userId}/beunreal/.empty`,
+//       `users/${userId}/profile/.empty`,
+//     ];
+
+//     // Function to create empty folders
+//     const createEmptyFolder = async (path: string) => {
+//       const folderRef = ref(storage, path);
+//       await uploadString(folderRef, ""); // Uploading an empty string creates a folder
+//     };
+
+//     // Create all empty folders
+//     return Promise.all(folders.map(createEmptyFolder)).then(() => {
+//       // Set user document in Firestore
+//       return setDoc(doc(db, "users", userId), { email, username }).then(() => {
+//         return { ...newUser.user, username };
+//       });
+//     });
+//   });
+// };
+
+// export const getUserProfile = async () => {
+//   let user = auth.currentUser;
+//   console.log(user);
+
+//   var userRef = doc(db, "users", user!.uid);
+
+//   const docSnap = await getDoc(userRef);
+
+//   if (docSnap.exists()) {
+//     console.log("Document data:", docSnap.data());
+//     return {
+//       ...docSnap.data(),
+//       id: user!.uid,
+//     };
+//   } else {
+//     console.log("No such document!", user!.uid);
+//     return null;
+//   }
+// };
+
+// interface QueryParams {
+//   collectionName: string;
+// }
+// interface Result {
+//   id: string;
+//   data: any;
+// }
+
+// export const queryObjectCollection = async ({
+//   collectionName,
+// }: QueryParams) => {
+//   let currentUserId = auth.currentUser!.uid;
+//   let collectionRef = collection(db, collectionName);
+
+//   let results: Result[] = [];
+
+//   const querySnapshot = await getDocs(collectionRef);
+//   querySnapshot.forEach((doc) => {
+//     results.push({
+//       id: doc.id,
+//       data: doc.data(),
+//     });
+//   });
+
+//   return results;
+// };
+
+// interface AddObjectParams {
+//   collectionName: string;
+//   objectData: any;
+// }
+
+// export const addObjectToCollection = async ({
+//   collectionName,
+//   objectData,
+// }: AddObjectParams) => {
+//   let currentUserId = auth.currentUser!.uid;
+//   let collectionRef = collection(db, collectionName);
+
+//   const docRef = await addDoc(collectionRef, {
+//     owner: currentUserId,
+//     content: { ...objectData },
+//     created: new Date().getTime(),
+//     updated: new Date().getTime(),
+//   });
+
+//   console.log(`addObjectToCollection ${collection} ${docRef}`);
+
+//   const docSnap = await getDoc(docRef);
+//   return { ...docSnap.data(), id: docRef.id };
+// };
+
+// interface RemoveObjectParams {
+//   collection: string;
+//   objectId: string;
+// }
+
+// export const removeObjectFromCollection = async ({
+//   collection,
+//   objectId,
+// }: RemoveObjectParams) => {
+//   let currentUserId = auth.currentUser!.uid;
+//   let docRef = doc(db, collection, objectId);
+
+//   await deleteDoc(docRef);
+
+//   console.log(`removeObjectFromCollection ${collection} ${objectId}`);
+//   return true;
+// };
+
+// export const getByRef = async (_documentRef: DocumentReference) => {
+//   const docSnap = await getDoc(_documentRef);
+
+//   if (docSnap.exists()) {
+//     return { ...docSnap.data(), id: _documentRef.id };
+//   } else {
+//     console.log("No such document!");
+//     return null;
+//   }
+// };
 
 export const uploadImage = async (blob: Blob) => {
   let currentUserId = auth.currentUser!.uid;
@@ -471,259 +483,256 @@ export const getLatestMessage = (
   });
 };
 
-export const sendFriendRequest = async (
-  currentUserId: string,
-  friendUserId: string
-) => {
-  console.log("sendFriendRequest", currentUserId, friendUserId);
-  // Ajouter une demande d'ami à la collection "friendRequests"
-  await setDoc(
-    doc(collection(db, "friendRequests"), `${currentUserId}_${friendUserId}`),
-    {
-      from: currentUserId,
-      to: friendUserId,
-      status: "pending", // La demande est en attente d'acceptation
-    }
-  );
-};
+// export const sendFriendRequest = async (
+//   currentUserId: string,
+//   friendUserId: string
+// ) => {
+//   console.log("sendFriendRequest", currentUserId, friendUserId);
+//   // Ajouter une demande d'ami à la collection "friendRequests"
+//   await setDoc(
+//     doc(collection(db, "friendRequests"), `${currentUserId}_${friendUserId}`),
+//     {
+//       from: currentUserId,
+//       to: friendUserId,
+//       status: "pending", // La demande est en attente d'acceptation
+//     }
+//   );
+// };
 
-export const acceptFriendRequest = async (
-  currentUserId: string,
-  friendUserId: string
-) => {
-  let batch = writeBatch(db);
+// export const acceptFriendRequest = async (
+//   currentUserId: string,
+//   friendUserId: string
+// ) => {
+//   let batch = writeBatch(db);
 
-  // Ajouter friendUserId à la liste des followers de currentUserId
-  let followerDoc1 = doc(db, "users", currentUserId, "followers", friendUserId);
-  batch.set(followerDoc1, {});
+//   // Ajouter friendUserId à la liste des followers de currentUserId
+//   let followerDoc1 = doc(db, "users", currentUserId, "followers", friendUserId);
+//   batch.set(followerDoc1, {});
 
-  // Ajouter currentUserId à la liste des followers de friendUserId
-  let followerDoc2 = doc(db, "users", friendUserId, "followers", currentUserId);
-  batch.set(followerDoc2, {});
+//   // Ajouter currentUserId à la liste des followers de friendUserId
+//   let followerDoc2 = doc(db, "users", friendUserId, "followers", currentUserId);
+//   batch.set(followerDoc2, {});
 
-  // Ajouter currentUserId à la liste des personnes suivies par friendUserId
-  let followingDoc1 = doc(
-    db,
-    "users",
-    friendUserId,
-    "following",
-    currentUserId
-  );
-  batch.set(followingDoc1, {});
+//   // Ajouter currentUserId à la liste des personnes suivies par friendUserId
+//   let followingDoc1 = doc(
+//     db,
+//     "users",
+//     friendUserId,
+//     "following",
+//     currentUserId
+//   );
+//   batch.set(followingDoc1, {});
 
-  // Ajouter friendUserId à la liste des personnes suivies par currentUserId
-  let followingDoc2 = doc(
-    db,
-    "users",
-    currentUserId,
-    "following",
-    friendUserId
-  );
-  batch.set(followingDoc2, {});
+//   // Ajouter friendUserId à la liste des personnes suivies par currentUserId
+//   let followingDoc2 = doc(
+//     db,
+//     "users",
+//     currentUserId,
+//     "following",
+//     friendUserId
+//   );
+//   batch.set(followingDoc2, {});
 
-  // // Supprimer la demande d'ami de la collection "friendRequests"
-  // let friendRequestDoc = doc(
-  //   db,
-  //   "friendRequests",
-  //   `${friendUserId}_${currentUserId}`
-  // );
-  // batch.delete(friendRequestDoc);
+//   // Supprimer la demande d'ami de la collection "friendRequests"
+//   let friendRequestDoc = doc(
+//     db,
+//     "friendRequests",
+//     `${friendUserId}_${currentUserId}`
+//   );
+//   batch.delete(friendRequestDoc);
 
-  // Commit the batch
-  await batch.commit();
-const friendRequestDoc = doc(
-  collection(db, "friendRequests"),
-  `${friendUserId}_${currentUserId}`
-);
-await updateDoc(friendRequestDoc, {
-  status: "accepted",
-});
-};
+//   // Commit the batch
+//   await batch.commit();
 
-export const rejectFriendRequest = async (
-  currentUserId: string,
-  friendUserId: string
-) => {
-  // Supprimer la demande d'ami de la collection "friendRequests"
-  await deleteDoc(
-    doc(collection(db, "friendRequests"), `${friendUserId}_${currentUserId}`)
-  );
-};
+//   // const friendRequestDoc = doc(
+//   //   collection(db, "friendRequests"),
+//   //   `${friendUserId}_${currentUserId}`
+//   // );
+//   // await updateDoc(friendRequestDoc, {
+//   //   status: "accepted",
+//   // });
+// };
 
-export const getPendingFriendRequestsRealtime = (
-  userId: string,
-  callback: (requests: any[]) => void
-) => {
-  return onSnapshot(
-    query(
-      collection(db, "friendRequests"),
-      where("to", "==", userId),
-      where("status", "==", "pending")
-    ),
-    async (snapshot) => {
-      const requests = await Promise.all(
-        snapshot.docs.map(async (docRequest) => {
-          const requestData = docRequest.data();
-          const userSnapshot = await getDoc(doc(db, "users", requestData.from));
-          const userData = userSnapshot.data();
-          const username = userData?.username || "";
+// export const rejectFriendRequest = async (
+//   currentUserId: string,
+//   friendUserId: string
+// ) => {
+//   // Supprimer la demande d'ami de la collection "friendRequests"
+//   await deleteDoc(
+//     doc(collection(db, "friendRequests"), `${friendUserId}_${currentUserId}`)
+//   );
+// };
 
-          return {
-            id: docRequest.id,
-            from: requestData.from,
-            to: requestData.to,
-            status: requestData.status,
-            username: username,
-            uuid: requestData.to,
-          };
-        })
-      );
-      console.log("requests", requests);
-      callback(requests);
-    }
-  );
-};
+// export const getPendingFriendRequestsRealtime = (
+//   userId: string,
+//   callback: (requests: any[]) => void
+// ) => {
+//   return onSnapshot(
+//     query(
+//       collection(db, "friendRequests"),
+//       where("to", "==", userId),
+//       where("status", "==", "pending")
+//     ),
+//     async (snapshot) => {
+//       const requests = await Promise.all(
+//         snapshot.docs.map(async (docRequest) => {
+//           const requestData = docRequest.data();
+//           const userSnapshot = await getDoc(doc(db, "users", requestData.from));
+//           const userData = userSnapshot.data();
+//           const username = userData?.username || "";
 
-export const getPendingFriendRequests = async (userId: string) => {
-  const requestsSnapshot = await getDocs(
-    query(
-      collection(db, "friendRequests"),
-      where("to", "==", userId),
-      where("status", "==", "pending")
-    )
-  );
+//           return {
+//             id: docRequest.id,
+//             from: requestData.from,
+//             to: requestData.to,
+//             status: requestData.status,
+//             username: username,
+//             uuid: requestData.to,
+//           };
+//         })
+//       );
+//       console.log("requests", requests);
+//       callback(requests);
+//     }
+//   );
+// };
 
-  const requests = await Promise.all(
-    requestsSnapshot.docs.map(async (docRequest) => {
-      const requestData = docRequest.data();
-      const userSnapshot = await getDoc(doc(db, "users", requestData.from));
-      const userData = userSnapshot.data();
-      const username = userData?.username || "";
+// export const getPendingFriendRequests = async (userId: string) => {
+//   const requestsSnapshot = await getDocs(
+//     query(
+//       collection(db, "friendRequests"),
+//       where("to", "==", userId),
+//       where("status", "==", "pending")
+//     )
+//   );
 
-      return {
-        id: docRequest.id,
-        from: requestData.from,
-        to: requestData.to,
-        status: requestData.status,
-        username: username,
-        uuid: requestData.to,
-      };
-    })
-  );
-  console.log("requests", requests);
-  return requests;
-};
+//   const requests = await Promise.all(
+//     requestsSnapshot.docs.map(async (docRequest) => {
+//       const requestData = docRequest.data();
+//       const userSnapshot = await getDoc(doc(db, "users", requestData.from));
+//       const userData = userSnapshot.data();
+//       const username = userData?.username || "";
 
-export const getFollowing = (
-  userId: string,
-  callback: (following: any) => void
-) => {
-  const unsubscribe = onSnapshot(
-    collection(db, "users", userId, "following"),
-    async (followingSnapshot) => {
-      const following = await Promise.all(
-        followingSnapshot.docs.map(async (docFollow) => {
-          const userSnapshot = await getDoc(doc(db, "users", docFollow.id));
-          const userData = userSnapshot.data();
-          const username = userData?.username || "";
+//       return {
+//         id: docRequest.id,
+//         from: requestData.from,
+//         to: requestData.to,
+//         status: requestData.status,
+//         username: username,
+//         uuid: requestData.to,
+//       };
+//     })
+//   );
+//   console.log("requests", requests);
+//   return requests;
+// };
 
-          return {
-            uid: docFollow.id,
-            username: username,
-          };
-        })
-      );
+// export const getFollowing = (
+//   userId: string,
+//   callback: (following: any) => void
+// ) => {
+//   const unsubscribe = onSnapshot(
+//     collection(db, "users", userId, "following"),
+//     async (followingSnapshot) => {
+//       const following = await Promise.all(
+//         followingSnapshot.docs.map(async (docFollow) => {
+//           const userSnapshot = await getDoc(doc(db, "users", docFollow.id));
+//           const userData = userSnapshot.data();
+//           const username = userData?.username || "";
 
-      console.log(following);
-      callback(following);
-    }
-  );
+//           return {
+//             uid: docFollow.id,
+//             username: username,
+//           };
+//         })
+//       );
 
-  // Retourner la fonction de désinscription pour permettre d'arrêter l'écoute des modifications
-  return unsubscribe;
-};
+//       console.log(following);
+//       callback(following);
+//     }
+//   );
 
-export const getUnfollowedUsersWithPendingStatus = async (
-  currentUserId: string,
-  callback: (users: any) => void
-) => {
+//   // Retourner la fonction de désinscription pour permettre d'arrêter l'écoute des modifications
+//   return unsubscribe;
+// };
 
+// export const getUnfollowedUsersWithPendingStatus = async (
+//   currentUserId: string,
+//   callback: (users: any) => void
+// ) => {
+//   // Obtenir la liste des demandes de suivi en attente
+//   const unsubscribeRequests = onSnapshot(
+//     collection(db, "friendRequests"),
+//     async (snapshot) => {
+//       // Obtenir la liste des utilisateurs suivis
+//       let followingUsers: any[] = await new Promise((resolve) => {
+//         const unsubscribe = getFollowing(currentUserId, (following) => {
+//           resolve(following);
+//           unsubscribe();
+//         });
+//       });
 
-  // Obtenir la liste des demandes de suivi en attente
-  const unsubscribeRequests = onSnapshot(
-    collection(db, "friendRequests"),
-   async  (snapshot) => {
-      // Obtenir la liste des utilisateurs suivis
-      let followingUsers: any[] = await new Promise((resolve) => {
-        const unsubscribe = getFollowing(currentUserId, (following) => {
-          resolve(following);
-          unsubscribe();
-        });
-      });
+//       console.log("followingUsers", followingUsers);
+//       interface RequestData {
+//         uuid: string;
+//         from: string;
+//         status: string;
+//         to: string;
+//         // Ajoutez ici d'autres propriétés si nécessaire
+//       }
+//       const pendingRequests = snapshot.docs
+//         .map((doc) => ({ uuid: doc.id, ...doc.data() } as RequestData))
+//         .filter(
+//           (request) =>
+//             request.from === currentUserId && request.status === "pending"
+//         );
+//       const pendingUserIds = pendingRequests.map((request) => request.to);
 
-      console.log("followingUsers", followingUsers);
-      interface RequestData {
-        uuid: string;
-        from: string;
-        status: string;
-        to: string;
-        // Ajoutez ici d'autres propriétés si nécessaire
-      }
-      const pendingRequests = snapshot.docs
-        .map((doc) => ({ uuid: doc.id, ...doc.data() } as RequestData))
-        .filter(
-          (request) =>
-            request.from === currentUserId && request.status === "pending"
-        );
-      const pendingUserIds = pendingRequests.map((request) => request.to);
+//       // Obtenir tous les utilisateurs
+//       const unsubscribeUsers = onSnapshot(
+//         collection(db, "users"),
+//         (userSnapshot) => {
+//           const allUsers = userSnapshot.docs.map((doc) => ({
+//             uid: doc.id,
+//             ...doc.data(),
+//           }));
 
-      // Obtenir tous les utilisateurs
-      const unsubscribeUsers = onSnapshot(
-        collection(db, "users"),
-        (userSnapshot) => {
-          const allUsers = userSnapshot.docs.map((doc) => ({
-            uid: doc.id,
-            ...doc.data(),
-          }));
+//           // Ajouter le statut de suivi à tous les utilisateurs
+//           const usersWithStatus = allUsers.map((user) => {
+//             if (
+//               followingUsers.some(
+//                 (followingUser) => followingUser.uid === user.uid
+//               )
+//             ) {
+//               return {
+//                 ...user,
+//                 status: "followed",
+//               };
+//             } else if (pendingUserIds.includes(user.uid)) {
+//               return {
+//                 ...user,
+//                 status: "pending",
+//               };
+//             } else {
+//               return {
+//                 ...user,
+//                 status: "notFollowed",
+//               };
+//             }
+//           });
+//           console.log("usersWithStatus", usersWithStatus);
+//           callback(usersWithStatus);
+//         }
+//       );
 
-          // Ajouter le statut de suivi à tous les utilisateurs
-          const usersWithStatus = allUsers.map((user) => {
-            if (
-              followingUsers.some(
-                (followingUser) => followingUser.uid === user.uid
-              )
-            ) {
-              return {
-                ...user,
-                status: "followed",
-              };
-            } else if (pendingUserIds.includes(user.uid)) {
-              return {
-                ...user,
-                status: "pending",
-              };
-            } else {
-              return {
-                ...user,
-                status: "notFollowed",
-              };
-            }
-          });
-          console.log("usersWithStatus", usersWithStatus);
-          callback(usersWithStatus);
-        }
-      );
-
-      // Retourner la fonction de désinscription pour permettre d'arrêter l'écoute des modifications
-      return () => {
-        unsubscribeRequests();
-        unsubscribeUsers();
-      };
-    }
-  );
-};
-
-
+//       // Retourner la fonction de désinscription pour permettre d'arrêter l'écoute des modifications
+//       return () => {
+//         unsubscribeRequests();
+//         unsubscribeUsers();
+//       };
+//     }
+//   );
+// };
 
 export const saveBeReal = async (
   uid: string,
@@ -853,36 +862,36 @@ export const saveBeReal = async (
 //   };
 // };
 
-export const unfollowUser = async (
-  currentUserId: string,
-  unfollowUserId: string
-) => {
-  try {
-    // Supprimer unfollowUserId de la liste des personnes suivies par currentUserId
-    const followingDoc = doc(
-      db,
-      "users",
-      currentUserId,
-      "following",
-      unfollowUserId
-    );
-    await deleteDoc(followingDoc);
+// export const unfollowUser = async (
+//   currentUserId: string,
+//   unfollowUserId: string
+// ) => {
+//   try {
+//     // Supprimer unfollowUserId de la liste des personnes suivies par currentUserId
+//     const followingDoc = doc(
+//       db,
+//       "users",
+//       currentUserId,
+//       "following",
+//       unfollowUserId
+//     );
+//     await deleteDoc(followingDoc);
 
-    // Supprimer currentUserId de la liste des followers de unfollowUserId
-    const followerDoc = doc(
-      db,
-      "users",
-      unfollowUserId,
-      "followers",
-      currentUserId
-    );
-    await deleteDoc(followerDoc);
+//     // Supprimer currentUserId de la liste des followers de unfollowUserId
+//     const followerDoc = doc(
+//       db,
+//       "users",
+//       unfollowUserId,
+//       "followers",
+//       currentUserId
+//     );
+//     await deleteDoc(followerDoc);
 
-    console.log("L'utilisateur a été supprimé de la liste d'amis avec succès.");
-  } catch (error) {
-    console.log(
-      "Une erreur s'est produite lors de la suppression de l'utilisateur de la liste d'amis: ",
-      error
-    );
-  }
-};
+//     console.log("L'utilisateur a été supprimé de la liste d'amis avec succès.");
+//   } catch (error) {
+//     console.log(
+//       "Une erreur s'est produite lors de la suppression de l'utilisateur de la liste d'amis: ",
+//       error
+//     );
+//   }
+// };
