@@ -747,6 +747,7 @@ export const saveBeReal = async (
 
   await addDoc(collection(db, "BeReal"), docData);
 };
+
 // export const getUsersFollowWithStatus = (
 //   currentUserId: string,
 //   status?: string,

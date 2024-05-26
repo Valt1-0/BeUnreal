@@ -7,6 +7,7 @@ export default {
         eloquiabold: ["EloquiaBold"],
         eloquialight: ["EloquiaLight"],
       },
+
     },
   },
   plugins: [require("daisyui")],
