@@ -735,7 +735,7 @@ export const saveBeReal = async (
   const timestamp = serverTimestamp();
   const timestampUrl = Date.now();
   // Upload the image to Firebase Storage
-  const storageRef = ref(storage, `images/${uid}/${timestampUrl}.jpeg`);
+  const storageRef = ref(storage, `users/${uid}/beunreal/${timestampUrl}.jpeg`);
   await uploadString(storageRef, imageUrl, "data_url");
   const url = await getDownloadURL(storageRef);
 
