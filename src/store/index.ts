@@ -64,6 +64,7 @@ export class Store {
       doGetPendingFriendRequestsRealtime: action,
       doUnFollow: action,
       doSaveBeReal: action,
+      doGetBeReal: action,
     });
 
     this.getUsers = this.getUsers.bind(this);
