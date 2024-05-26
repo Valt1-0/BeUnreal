@@ -43,8 +43,8 @@ const Home: React.FC = () => {
     if (isPlatform("hybrid")) {
       registerNotifications();
       addListeners();
-    
-    checkLocationPermissions();
+
+      checkLocationPermissions();
     }
   }, []);
 
@@ -142,7 +142,7 @@ const Home: React.FC = () => {
     <IonPage>
       <IonContent fullscreen={true} className="w-full h-full">
         {imageData ? (
-          <div className=" w-full h-full">
+          <div className="w-full h-full">
             <button
               className="absolute top-7 left-4 text-white text-3xl z-10"
               onClick={() => setImageData("")}
@@ -172,29 +172,28 @@ const Home: React.FC = () => {
             }}
           ></button>
         ) : (
-          <div className="flex justify-end  pr-6">
+          <div className="flex justify-end pr-6">
             <IonButton
-              className="absolute bottom-10  w-auto h-16 bg-black text-white rounded-full "
+              className="absolute bottom-10 w-auto h-16 bg-black text-white rounded-full "
               onClick={async () => {
                 let coordinates = { coords: { latitude: 0, longitude: 0 } };
                 if (isPlatform("hybrid")) {
                   coordinates = await Geolocation.getCurrentPosition();
                 }
-               const save = await  store.doSaveBeReal(
+                const save = await store.doSaveBeReal(
                   {
                     latitude: coordinates.coords.latitude,
                     longitude: coordinates.coords.longitude,
                   },
                   `data:image/jpeg;base64,${imageData}`
                 );
-                  console.log(save);
+                console.log(save);
                 if (save) {
                   showToast("Image saved successfully");
-                   setImageData("");
+                  setImageData("");
                 } else {
                   showToast("Image save failed");
                 }
-
               }}
               fill="clear"
             >
@@ -203,6 +202,7 @@ const Home: React.FC = () => {
             </IonButton>
           </div>
         )}
+        +{" "}
       </IonContent>
     </IonPage>
   );
