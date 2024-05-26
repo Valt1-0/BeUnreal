@@ -34,22 +34,19 @@ import {
   serverTimestamp,
 } from "firebase/firestore";
 import {
+
   getStorage,
   ref,
   uploadBytesResumable,
   getDownloadURL,
   uploadString,
+  FirebaseStorage,
 } from "firebase/storage";
+import config from "./../config";
 
-const firebaseConfig = {
-  apiKey: "AIzaSyC8EbcRqe4j-xjvvg3LZZpvqt9IDlhdpZo",
-  authDomain: "beunreal-b282b.firebaseapp.com",
-  projectId: "beunreal-b282b",
-  storageBucket: "beunreal-b282b.appspot.com",
-  messagingSenderId: "77689837748",
-  appId: "1:77689837748:web:ac91383f37bb08de6b9fe1",
-  measurementId: "G-NKSDGM23J6",
-};
+
+const firebaseConfig = config.firebaseConfig;
+
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
@@ -72,6 +69,7 @@ export const authCheck = async (
     });
   });
 };
+
 export const getUsers = async (username?: string) => {
   const usersRef = collection(db, "users");
   let q;

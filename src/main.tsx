@@ -1,8 +1,6 @@
 import React from "react";
 import { createRoot } from "react-dom/client";
 import App from "./App";
-import { initializeApp } from "firebase/app";
-import { getAnalytics } from "firebase/analytics";
 import { Provider } from "mobx-react";
 import { defineCustomElements } from '@ionic/pwa-elements/loader';
 import { Store } from "./store";
