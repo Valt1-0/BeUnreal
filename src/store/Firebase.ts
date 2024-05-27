@@ -455,6 +455,14 @@ export const sendMessage = async (
     // Obtenir l'URL de téléchargement
     message.content = await getDownloadURL(uploadTask.snapshot.ref);
   }
+  const participantDataRef = collection(db, `chats/${chatId}/participantData`);
+  const participantDataSnapshot = await getDocs(participantDataRef);
+  participantDataSnapshot.docs.forEach(async (doc) => {
+    if (doc.data().hasDeletedChat) {
+      // Si un participant a supprimé la conversation, mettez hasDeletedChat à false
+      await updateDoc(doc.ref, { hasDeletedChat: false });
+    }
+  });
 
   const messageRef = collection(db, `chats/${chatId}/messages`);
   return await addDoc(messageRef, {
@@ -462,6 +470,23 @@ export const sendMessage = async (
     timestamp: new Timestamp(Date.now() / 1000, 0),
   });
 };
+
+export const deleteUserChat = async (userId: string, chatId: string) => {
+  const participantDataRef = collection(db, `chats/${chatId}/participantData`);
+  const participantSnapshot = await getDocs(participantDataRef);
+  const userDoc = participantSnapshot.docs.find(
+    (doc) => doc.data().participantId === userId
+  );
+
+  if (userDoc) {
+    await updateDoc(userDoc.ref, { hasDeletedChat: true });
+    console.log("delete ! ");
+  } else {
+    console.log("User not found in participantData");
+  }
+};
+
+
 
 export const createChat = async (_participants: string[]) => {
   const chatRef = collection(db, "chats");
@@ -506,54 +531,92 @@ interface Tchat {
   latestMessage?: any;
   [key: string]: any;
 }
-
-export const getChats = async (
-  userId: string,
-  callback: (chats: any[]) => void
-) => {
+export const getChats = (userId: string, callback: (chats: any[]) => void) => {
   const chatsRef = query(
     collection(db, "chats"),
     where("participants", "array-contains", userId)
   );
 
-  return onSnapshot(chatsRef, async (snapshot) => {
-    const chats = [];
-    for (let chatDoc of snapshot.docs) {
-      const participantDataRef = doc(
-        db,
-        `chats/${chatDoc.id}/participantData/${userId}`
-      );
-      const participantDataSnapshot = await getDoc(participantDataRef);
-      const participantData = participantDataSnapshot.data() as ParticipantData;
-      if (!participantData?.hasDeletedChat) {
-        const tchat: Tchat = {
-          id: chatDoc.id,
-          participants: [],
-          ...chatDoc.data(),
-        };
+  let chats: any[] = [];
+  let unsubscribeFunctions: (() => void)[] = [];
 
-        // Récupérer les informations des participants
-        tchat.participants = await Promise.all(
-          tchat.participants.map(async (participantId: string) => {
-            const userRef = doc(db, "users", participantId);
-            const userSnapshot = await getDoc(userRef);
-            const userData = userSnapshot.data();
-            return { uid: participantId, ...userData };
-          })
+  const unsubscribe = onSnapshot(chatsRef, (snapshot): void => {
+    // Désabonner des mises à jour précédentes
+    unsubscribeFunctions.forEach((unsub) => unsub());
+    unsubscribeFunctions = [];
+
+    snapshot.docs.forEach((chatDoc) => {
+      const participantDataRef = collection(
+        db,
+        `chats/${chatDoc.id}/participantData`
+      );
+
+      getDocs(participantDataRef).then((participantDataSnapshot) => {
+        const userDoc = participantDataSnapshot.docs.find(
+          (doc) => doc.data().participantId === userId
         );
 
-        // Récupérer le dernier message du chat
-        getLatestMessage(chatDoc.id, (message) => {
-          tchat.latestMessage = message;
-        });
-        chats.push(tchat);
-      }
-    }
+        if (userDoc) {
+          const unsub = onSnapshot(userDoc.ref, (docSnapshot) => {
+            const hasDeletedChat = docSnapshot.data()?.hasDeletedChat;
 
-    callback(chats);
+            if (!hasDeletedChat) {
+              const tchat: Tchat = {
+                id: chatDoc.id,
+                participants: [],
+                ...chatDoc.data(),
+              };
+
+              // Récupérer les informations des participants
+              Promise.all(
+                tchat.participants.map((participantId: string) => {
+                  const userRef = doc(db, "users", participantId);
+                  return getDoc(userRef).then((userSnapshot) => {
+                    const userData = userSnapshot.data();
+                    return { uid: participantId, ...userData };
+                  });
+                })
+              ).then((participants) => {
+                tchat.participants = participants;
+
+                // Récupérer le dernier message du chat en temps réel
+                const messagesRef = collection(
+                  db,
+                  `chats/${chatDoc.id}/messages`
+                );
+                const unsubMessage = onSnapshot(
+                  query(messagesRef, orderBy("timestamp", "desc"), limit(1)),
+                  (messageSnapshot) => {
+                    if (!messageSnapshot.empty) {
+                      tchat.latestMessage = messageSnapshot.docs[0].data();
+                    }
+                  }
+                );
+
+                unsubscribeFunctions.push(unsubMessage);
+
+                chats.push(tchat);
+                callback(chats);
+              });
+            } else {
+              // Si le chat a été supprimé, le supprimer du tableau
+              chats = chats.filter((chat) => chat.id !== chatDoc.id);
+              callback(chats);
+            }
+          });
+
+          unsubscribeFunctions.push(unsub);
+        }
+      });
+    });
   });
-};
 
+  // Retourner la fonction de désabonnement
+  return () => {
+    unsubscribe();
+    unsubscribeFunctions.forEach((unsub) => unsub());
+  };
+};
 export const getMessages = async (
   chatId: string,
   userId: string,
@@ -619,22 +682,30 @@ export const getLatestMessage = (
 
 export const getChatIdByParticipants = async (
   participants: string[]
-): Promise<string | null> => {
+): Promise<{ tChatID: string | null; usernames: string[] }> => {
   const chatRef = collection(db, "chats");
 
   // Trier les participants
   const sortedParticipants = [...participants].sort();
-console.log(sortedParticipants);
+
   // Requête pour trouver un chat existant avec les mêmes participants
   const q = query(chatRef, where("participants", "==", sortedParticipants));
   const querySnapshot = await getDocs(q);
 
+  // Récupérer les noms d'utilisateur des participants
+  const usernames = await Promise.all(
+    participants.map(async (participantId) => {
+      const userSnapshot = await getDoc(doc(db, "users", participantId));
+      return userSnapshot.data()?.username || null;
+    })
+  );
+
   if (!querySnapshot.empty) {
     // Le chat existe déjà, retourner son id
-    return querySnapshot.docs[0].id;
+    return { tChatID: querySnapshot.docs[0].id, usernames };
   } else {
     // Le chat n'existe pas
-    return null;
+    return { tChatID: null, usernames };
   }
 };
 

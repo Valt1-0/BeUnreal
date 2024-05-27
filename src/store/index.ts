@@ -12,7 +12,11 @@ import { UserService } from "../services/user";
 import { FriendsService } from "../services/friends";
 const userService = new UserService();
 const friendsService = new FriendsService();
-
+interface UserInfo {
+  username: string;
+  email: string;
+  password: string;
+}
 export class Store {
   activeUser: any = null;
   loading: boolean = false;
@@ -41,6 +45,7 @@ export class Store {
       followingUsers: observable,
       pendingFriendRequests: observable,
       authenticatedUser: computed,
+
       // doCheckAuth: computed,
       getTchatMessages: action,
       getTchatIdByParticipants: action,
@@ -66,6 +71,9 @@ export class Store {
       doSaveBeReal: action,
       doGetBeReal: action,
       doGetNearbyNonFollowedunBeReal: action,
+      doDeleteTchat: action,
+      doUpdateUser : action,
+      doDeleteUser : action,
     });
 
     this.getUsers = this.getUsers.bind(this);
@@ -101,6 +109,26 @@ export class Store {
       });
   }
 
+  async doDeleteUser() {
+    try {
+      await userService.deleteUser(this.activeUser.uid);
+      return true;
+    } catch (err) {
+      console.error("Error to delete user: ", err);
+      return false;
+    }
+  }
+
+  async doUpdateUser(updatedInfo: Partial<UserInfo>) {
+    try {
+      await userService.updateUser(this.activeUser, updatedInfo);
+      return true;
+    } catch (err) {
+      console.error("Error updating user: ", err);
+      return false;
+    }
+  }
+
   // get doCheckAuth() {
   //   if (firebaseService.getCurrentUser()) {
   //     return this.activeUser;
@@ -110,6 +138,7 @@ export class Store {
   // }
 
   getTchatMessages = (_chatId: string, _userID: string) => {
+    if (!_chatId || !_userID) return null;
     return firebaseService.getMessages(_chatId, _userID, (messages: any[]) => {
       console.log(messages);
       runInAction(() => {
@@ -276,6 +305,16 @@ export class Store {
     }
   }
 
+  async doDeleteTchat(_tchatID: string) {
+    try {
+      console.log("test delete");
+      await firebaseService.deleteUserChat(this.activeUser.uid, _tchatID);
+      return true;
+    } catch (err) {
+      console.error("Error to delete tchat: ", err);
+      return false;
+    }
+  }
   async doSendMessage(
     _chatId: string,
     _message: firebaseService.Message,

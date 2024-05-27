@@ -19,7 +19,7 @@ import { closeCircle } from "ionicons/icons";
 import "tailwindcss/tailwind.css";
 import { MobXProviderContext,observer } from "mobx-react";
 import Tchat from "../components/Tchat";
-
+import * as  FirebaseService from "./../store/Firebase";
 const CreateTchatPage: React.FC = () => {
     const {store} = React.useContext(MobXProviderContext);
     const { followingUsers, authenticatedUser, tchatMessages } = store;
@@ -32,17 +32,19 @@ const CreateTchatPage: React.FC = () => {
   } | null>(null);
 const [inputValue, setInputValue] = useState("");
 
-const [chatId, setChatId] = useState<string | null>(null);
-
+const [tchatID, setChatId] = useState<string | null>(null);
+const [sendMessage, setSendMessage] = useState(false);
 useEffect(() => {
     store.doGetFollowingUsers();
 }, []);
 
 useEffect(() => {
     const fetchChatId = async () => {
-        const chatId = await store.getTchatIdByParticipants(selectedFriends.map((friend) => friend.uid));
-        console.log(chatId);
-        setChatId(chatId);
+        const { tChatID } = await store.getTchatIdByParticipants(
+          selectedFriends.map((friend) => friend.uid)
+        );
+        console.log(tChatID);
+        setChatId(tChatID);
     }
     fetchChatId();
       setInputValue("");
@@ -94,14 +96,41 @@ const handleKeyDown = (e: React.KeyboardEvent) => {
       }
 };
 
+const handleSendMessage = async (
+  id: string,
+  message: FirebaseService.Message,
+  imageFile: File | null
+) => {
+const participants = [
+  ...selectedFriends.map((friend) => friend.uid),
+  authenticatedUser.uid,
+];
+   if(!tchatID)
+    {
+    const tchat = await store.doCreateChat(participants);
+    await store.doSendMessage(tchat.id, message, imageFile);
+    setChatId(tchat.id);
+    }
+    else 
+    {
+    await store.doSendMessage(tchatID, message, imageFile);
+    }
+    setSendMessage(true);
+};
+
   return (
     <IonPage>
       <IonHeader>
         <IonToolbar>
-          <IonButtons  slot="start"  > 
-          <IonBackButton className="text-white"  defaultHref="/tchat"/>
+          <IonButtons slot="start">
+            <IonBackButton className="text-white" defaultHref="/tchat" />
           </IonButtons>
-          <IonTitle>Nouvelle conversation</IonTitle>
+
+          <IonTitle className="truncate">
+            {!sendMessage
+              ? "Nouvelle conversation"
+              : selectedFriends.map((friend) => friend.username).join(", ")}
+          </IonTitle>
         </IonToolbar>
       </IonHeader>
       <IonContent fullscreen={false}>
@@ -135,7 +164,7 @@ const handleKeyDown = (e: React.KeyboardEvent) => {
                 />
               </div>
               <div className="justify-center items-center  w-56 z-10  ">
-                {(inputValue !== "" || chatId === null) && (
+                {(inputValue !== "" || tchatID === null) && (
                   <IonList className="absolute w-56">
                     {followingUsers.map(
                       (
@@ -165,13 +194,13 @@ const handleKeyDown = (e: React.KeyboardEvent) => {
             </div>
           </div>
           <div className=" relative grow  ">
-            {chatId && (
+            {selectedFriends.length > 0 && (
               <Tchat
-                id={chatId}
+                id={tchatID || ""}
                 authenticatedUser={authenticatedUser}
                 tchatMessages={tchatMessages}
                 getTchatMessages={store.getTchatMessages}
-                doSendMessage={store.doSendMessage}
+                doSendMessage={handleSendMessage}
               />
             )}
           </div>

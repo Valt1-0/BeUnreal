@@ -7,6 +7,7 @@ import {
   createUserWithEmailAndPassword,
   signOut,
   User,
+  updateCurrentUser,
 } from "firebase/auth";
 import {
   getFirestore,
@@ -60,6 +61,8 @@ interface Result {
   data: any;
 }
 export class UserService {
+  
+  
   firebaseConfig = config.firebaseConfig;
 
   app = initializeApp(this.firebaseConfig);
@@ -151,6 +154,33 @@ export class UserService {
         );
       });
     });
+  };
+
+  updateUser = async (userId: string, updatedInfo: Partial<UserInfo>) => {
+    const userRef = doc(this.db, "users", userId);
+
+    return updateDoc(userRef, updatedInfo)
+      .then(() => {
+        console.log("User updated");
+      })
+      .catch((error) => {
+        console.error("Error updating user: ", error);
+      });
+  };
+
+  deleteUser = async (userId: string) => {
+    const userRef = doc(this.db, "users", userId);
+
+    // Supprimer l'utilisateur de Firestore
+    await deleteDoc(userRef);
+
+    // Supprimer l'utilisateur de Firebase Authentication
+    const user = this.auth.currentUser;
+    if (user && user.uid === userId) {
+      await user.delete();
+    }
+
+    console.log("User deleted");
   };
 
   getUserProfile = async () => {

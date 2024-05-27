@@ -77,7 +77,7 @@ useEffect(() => {
       await getTchatMessages(id, authenticatedUser.uid);
     };
     fetchTchatMessage();
-  }, []);
+  }, [id]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -129,7 +129,7 @@ useEffect(() => {
   };
 
   return (
-    <div className="absolute flex flex-col h-full w-full">
+    <div className="absolute flex flex-col h-full w-full justify-between">
       <div className="flex flex-col overflow-y-scroll  grow-0">
         {tchatMessages &&
           sortMessagesByTimestamp(tchatMessages).map(
@@ -185,11 +185,7 @@ useEffect(() => {
             )
           )}
       </div>
-      <div
-        className="relative flex max-h-28 w-full bg-black "
-        style={{ bottom: `${bottom}px` }}
-        id="form"
-      >
+      <div className=" flex max-h-28 w-full bg-black bottom-0">
         <input
           type="file"
           accept="image/*"

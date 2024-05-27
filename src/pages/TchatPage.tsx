@@ -12,12 +12,14 @@ import { closeCircle } from "ionicons/icons";
 import "tailwindcss/tailwind.css";
 import { MobXProviderContext, observer } from "mobx-react";
 import Tchat from "../components/Tchat";
-import { useParams } from "react-router";
+import { useParams } from "react-router-dom";
 
 const TchatPage: React.FC = () => {
   const { store } = React.useContext(MobXProviderContext);
   const { followingUsers, authenticatedUser, tchatMessages } = store;
   const { id } = useParams<{ id: string }>();
+
+
 
   return (
     <IonPage >
@@ -30,7 +32,7 @@ const TchatPage: React.FC = () => {
         </IonToolbar>
       </IonHeader>
       <IonContent fullscreen={false}>
-        <div className="h-full w-full flex flex-col">
+        <div className="h-full w-full flex flex-col"> 
           {id && (
             <Tchat
               id={id}

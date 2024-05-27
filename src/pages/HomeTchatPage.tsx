@@ -12,6 +12,9 @@ import {
   IonTitle,
   IonButtons,
   IonBackButton,
+  IonItemOptions,
+  IonItemOption,
+  IonItemSliding,
 } from "@ionic/react";
 import React, { useState, useEffect } from "react";
 import * as FAIcons from "react-icons/fa";
@@ -35,11 +38,10 @@ const Tchat: React.FC = () => {
   }, []);
 
 
-
   return (
-    <IonPage >
-      <IonHeader >
-        <IonToolbar >
+    <IonPage>
+      <IonHeader>
+        <IonToolbar>
           <IonButtons slot="start">
             <IonBackButton defaultHref="/your-default-route" />
           </IonButtons>
@@ -59,31 +61,41 @@ const Tchat: React.FC = () => {
       <IonContent>
         <IonList>
           {tchats.map((tchat: any) => (
-            <IonItem
-              key={tchat.id}
-              routerLink={`/tchat/${tchat.id}`}
-            >
-              <IonAvatar slot="start">
-                <img
-                  src={
-                    tchat.avatarUrl
-                      ? tchat.avatarUrl
-                      : `https://robohash.org/${authenticatedUser.username}.png`
-                  }
-                />
-              </IonAvatar>
-              <IonLabel
-                style={{
-                  whiteSpace: "nowrap",
-                  overflow: "hidden",
-                  textOverflow: "ellipsis",
-                }}
+            <IonItemSliding key={tchat.id}>
+              <IonItem routerLink={`/tchat/${tchat.id}`}>
+                <IonAvatar slot="start">
+                  <img
+                    src={
+                      tchat.avatarUrl
+                        ? tchat.avatarUrl
+                        : `https://robohash.org/${authenticatedUser.username}.png`
+                    }
+                  />
+                </IonAvatar>
+                <IonLabel
+                  style={{
+                    whiteSpace: "nowrap",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                  }}
+                >
+                  {tchat.participants
+                    .map((user: any) => user.username)
+                    .join(", ")}
+                </IonLabel>
+              </IonItem>
+              <IonItemOptions
+                side="end"
+                onIonSwipe={() => store.doDeleteTchat(tchat.id)}
               >
-                {tchat.participants
-                  .map((user: any) => user.username)
-                  .join(", ")}
-              </IonLabel>
-            </IonItem>
+                <IonItemOption
+                  color="danger"
+                  onClick={() => store.doDeleteTchat(tchat.id)}
+                >
+                  Supprimer
+                </IonItemOption>
+              </IonItemOptions>
+            </IonItemSliding>
           ))}
         </IonList>
       </IonContent>
