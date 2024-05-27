@@ -5,6 +5,12 @@ export default {
     fontSize: {
       x: "0.5rem",
       "2x": "0.75rem",
+      "3x": "1rem",
+      "4x": "1.25rem",
+      "5x": "1.5rem",
+      "6x": "1.75rem",
+      "7x": "2rem",
+      "8x": "2.25rem",
     },
     extend: {
       fontFamily: {

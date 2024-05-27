@@ -17,6 +17,7 @@ interface UserInfo {
   email: string;
   password: string;
 }
+
 export class Store {
   activeUser: any = null;
   loading: boolean = false;
@@ -121,7 +122,7 @@ export class Store {
 
   async doUpdateUser(updatedInfo: Partial<UserInfo>) {
     try {
-      await userService.updateUser(this.activeUser, updatedInfo);
+      await userService.updateUser(this.activeUser.uid, updatedInfo);
       return true;
     } catch (err) {
       console.error("Error updating user: ", err);
