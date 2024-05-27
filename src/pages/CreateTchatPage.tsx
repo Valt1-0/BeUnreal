@@ -88,9 +88,9 @@ const handleKeyDown = (e: React.KeyboardEvent) => {
         </IonToolbar>
       </IonHeader>
       <IonContent fullscreen={false}>
-        <div className="max-h-full h-full flex">
-          <div className="absolute  w-full items-center justify-center ">
-            <div >
+        <div className="max-h-full h-full w-full grid grid-rows-1  ">
+          <div className="flex absolute  w-full items-center justify-center h-10">
+            <div className="absolute items-center justify-center z-10 ">
               <div className="flex items-center w-full">
                 <IonLabel className="whitespace-nowrap">à :</IonLabel>
                 {selectedFriends.map((friend, index) => (
@@ -147,8 +147,7 @@ const handleKeyDown = (e: React.KeyboardEvent) => {
               </div>
             </div>
           </div>
-
-          <div>
+          <div className="h-full w-full max-h-full flex">
             {chatId && (
               <Tchat
                 id={chatId}

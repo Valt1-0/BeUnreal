@@ -117,8 +117,8 @@ useEffect(() => {
   };
 
   return (
-    <div className="h-full w-full flex flex-col">
-      <div className=" flex-grow overflow-y-scroll">
+    <div className="flex flex-col flex-grow h-full">
+      <div className="relative overflow-y-scroll">
         {tchatMessages &&
           sortMessagesByTimestamp(tchatMessages).map(
             (msg: MessageWithUsername, index: number) => (
@@ -171,7 +171,7 @@ useEffect(() => {
           )}
       </div>
       <div
-        className=" relative flex min-h-28  w-full bg-red-900 "
+        className="relative flex max-h-28 w-full bg-red-900 "
         style={{ bottom: `${bottom}px` }}
         id="form"
       >
