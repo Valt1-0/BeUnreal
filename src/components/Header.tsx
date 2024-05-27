@@ -18,14 +18,13 @@ const Header = () => {
   const { store } = useContext(MobXProviderContext);
   let { authenticatedUser } = store;
   const [pendingFriendRequests, setPendingFriendRequests] = useState(0);
-const [showPopover, setShowPopover] = useState<{
-  open: boolean;
-  event: React.MouseEvent<HTMLImageElement, MouseEvent> | undefined;
-}>({
-  open: false,
-  event: undefined,
-});
-
+  const [showPopover, setShowPopover] = useState<{
+    open: boolean;
+    event: React.MouseEvent<HTMLImageElement, MouseEvent> | undefined;
+  }>({
+    open: false,
+    event: undefined,
+  });
 
   useEffect(() => {
     store.doGetPendingFriendRequestsRealtime();
@@ -83,28 +82,23 @@ const [showPopover, setShowPopover] = useState<{
               }
             >
               <IonList>
-                <IonItem detail={true} button onClick={() => console.log("Profil clicked")}>
+                <IonItem
+                  detail={true}
+                  button
+                  routerLink="/profile"
+                  routerDirection="forward"
+                  onClick={() =>
+                    setShowPopover({ open: false, event: undefined })
+                  }
+                >
                   <IonLabel>Profil</IonLabel>
                 </IonItem>
-                <IonItem detail={false}  button onClick={() => store.doLogout()}>
+                <IonItem detail={false} button onClick={() => store.doLogout()}>
                   <IonLabel>Logout</IonLabel>
                 </IonItem>
               </IonList>
             </IonPopover>
           </div>
-          <IonButton
-            fill="clear"
-            routerLink="/profile"
-            routerDirection="forward"
-          >
-            <div className="w-10 h-10 rounded-full flex justify-center items-center ml-2">
-              <img
-                className="rounded-full"
-                src={`https://robohash.org/${authenticatedUser?.username}.png`}
-                alt="avatar"
-              />
-            </div>
-          </IonButton>
         </IonButtons>
       )}
     </IonToolbar>
