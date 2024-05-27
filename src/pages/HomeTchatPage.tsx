@@ -37,9 +37,9 @@ const Tchat: React.FC = () => {
 
 
   return (
-    <IonPage>
-      <IonHeader>
-        <IonToolbar>
+    <IonPage >
+      <IonHeader translucent={true}>
+        <IonToolbar >
           <IonButtons slot="start">
             <IonBackButton defaultHref="/your-default-route" />
           </IonButtons>

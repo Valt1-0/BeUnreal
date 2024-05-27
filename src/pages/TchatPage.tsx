@@ -20,7 +20,7 @@ const TchatPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
 
   return (
-    <IonPage>
+    <IonPage >
       <IonHeader>
         <IonToolbar>
           <IonButtons slot="start">

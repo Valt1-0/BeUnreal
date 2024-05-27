@@ -65,6 +65,7 @@ export class Store {
       doUnFollow: action,
       doSaveBeReal: action,
       doGetBeReal: action,
+      doGetNearbyNonFollowedunBeReal: action,
     });
 
     this.getUsers = this.getUsers.bind(this);
@@ -440,6 +441,22 @@ export class Store {
   async doGetFollowBeUnReal() {
     try {
       const beUnReal = firebaseService.getFollowBeUnReal(this.activeUser.uid);
+      return beUnReal;
+    } catch (err) {
+      console.error("Error to get be real: ", err);
+      return null;
+    }
+  }
+
+  async doGetNearbyNonFollowedunBeReal(location: {
+    latitude: number;
+    longitude: number;
+  }) {
+    try {
+      const beUnReal = firebaseService.getNearbyNonFollowedUnBeReal(
+        this.activeUser.uid,
+        location
+      );
       return beUnReal;
     } catch (err) {
       console.error("Error to get be real: ", err);
