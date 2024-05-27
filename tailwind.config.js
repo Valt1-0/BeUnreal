@@ -4,7 +4,7 @@ export default {
   theme: {
     fontSize: {
       x: "0.5rem",
-      '2x': "0.75rem"
+      "2x": "0.75rem",
     },
     extend: {
       fontFamily: {
@@ -13,15 +13,5 @@ export default {
       },
     },
   },
-  // daisyui: {
-  //   themes: [
-  //     {
-  //       dark: {
-  //         "primary": "#FFFFFF",
-  //         "primary-content": "#121212",
-  //       },
-  //     },
-  //   ],
-  // },
   plugins: [require("daisyui")],
 };
