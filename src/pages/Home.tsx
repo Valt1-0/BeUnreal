@@ -18,7 +18,11 @@ import * as FAIcons from "react-icons/fa";
 import SwiperCore from "swiper";
 import { Swiper, SwiperSlide } from "swiper/react";
 import "swiper/css";
+import { isPlatform } from "@ionic/react";
+import { Geolocation } from "@capacitor/geolocation";
 import { Tooltip } from "react-tooltip";
+import { Toast } from "@capacitor/toast";
+
 import { convertTimestamp } from "../functions/convertTimestamp";
 
 const Home = () => {
@@ -26,6 +30,24 @@ const Home = () => {
   const [myBeUnreal, setMyBeUnreal] = useState<any>([]);
   const [followerBeUnReal, setFollowerBeUnReal] = useState<any>([]);
   const [isOpen, setIsOpen] = useState(false);
+
+  const showToast = async (msg: string) => {
+    await Toast.show({
+      text: msg,
+    });
+  };
+
+  const checkLocationPermissions = () => {
+    Geolocation.requestPermissions().then((result) => {
+      if (result.location === "granted") {
+        console.log("Location permission granted");
+      } else {
+        showToast(
+          "Location permission denied. Please enable it in the app settings."
+        );
+      }
+    });
+  };
 
   useEffect(() => {
     store.doGetBeReal().then((b: any) => {
@@ -36,6 +58,25 @@ const Home = () => {
       setFollowerBeUnReal(b);
       console.log(b);
     });
+  }, []);
+
+  useEffect(() => {
+    const getNearbyNonFollowedunBeReal = async () => {
+      let coordinates = { coords: { latitude: 0, longitude: 0 } };
+      if (isPlatform("hybrid")) {
+        coordinates = await Geolocation.getCurrentPosition();
+      }
+      store
+        .doGetNearbyNonFollowedunBeReal({
+          latitude: coordinates.coords.latitude,
+          longitude: coordinates.coords.longitude,
+        })
+        .then((r: any) => {
+          console.log(r);
+        });
+    };
+    checkLocationPermissions();
+    getNearbyNonFollowedunBeReal();
   }, []);
 
   const cardData = [

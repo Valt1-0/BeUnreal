@@ -32,6 +32,7 @@ import {
   DocumentSnapshot,
   writeBatch,
   serverTimestamp,
+  
 } from "firebase/firestore";
 import {
   getStorage,
@@ -42,6 +43,7 @@ import {
   FirebaseStorage,
 } from "firebase/storage";
 import config from "./../config";
+import * as geofire from "geofire-common";
 
 const firebaseConfig = config.firebaseConfig;
 
@@ -70,6 +72,7 @@ export const saveBeReal = async (
 ) => {
   const timestamp = serverTimestamp();
   const timestampUrl = Date.now();
+  const hash = geofire.geohashForLocation([location.latitude, location.longitude]);
   // Upload the image to Firebase Storage
   const storageRef = ref(storage, `users/${uid}/beunreal/${timestampUrl}.jpeg`);
   await uploadString(storageRef, imageUrl, "data_url");
@@ -79,6 +82,7 @@ export const saveBeReal = async (
   const docData = {
     uid,
     timestamp,
+    hash,
     location,
     url,
   };
@@ -86,6 +90,64 @@ export const saveBeReal = async (
   await addDoc(collection(db, "BeReal"), docData);
 };
 
+export const getNearbyNonFollowedUnBeReal = async (
+  currentUserId: string,
+  currentLocation: { latitude: number; longitude: number }
+) => {
+  // Récupérer la liste des personnes suivies par l'utilisateur actuel
+  const currentUserDoc = await getDoc(doc(db, "users", currentUserId));
+  const followedUsers = currentUserDoc.data()?.followedUsers || [];
+
+  // Définir le centre et le rayon pour la requête geohash
+  const center: geofire.Geopoint = [
+    currentLocation.latitude,
+    currentLocation.longitude,
+  ];
+  const radiusInM = 30 * 1000;
+
+  // Obtenir les limites de la requête geohash
+  const bounds = geofire.geohashQueryBounds(center, radiusInM);
+  const promises = [];
+  for (const b of bounds) {
+    const q = query(
+      collection(db, "BeReal"),
+      orderBy("hash"),
+      startAt(b[0]),
+      endAt(b[1])
+    );
+    promises.push(getDocs(q));
+  }
+
+  // Collecter tous les résultats de la requête dans une seule liste
+  const snapshots = await Promise.all(promises);
+
+  const matchingDocs = [];
+  for (const snap of snapshots) {
+    for (const snapDoc of snap.docs) {
+      const location = snapDoc.get("location");
+
+      // Nous devons filtrer quelques faux positifs en raison de la précision du geohash,
+      // mais la plupart correspondront
+      const distanceInKm = geofire.distanceBetween(
+        [location.latitude, location.longitude],
+        center
+      );
+      const distanceInM = distanceInKm * 1000;
+      if (
+        distanceInM <= radiusInM &&
+        !followedUsers.includes(snapDoc.data().uid) &&
+        snapDoc.data().uid !== currentUserId
+      ) {
+        // Récupérer les informations supplémentaires de l'utilisateur
+        const userDoc = await getDoc(doc(db, "users", snapDoc.data().uid));
+        const userData = userDoc.data();
+        matchingDocs.push({ ...snapDoc.data(), ...userData });
+      }
+    }
+  }
+
+  return matchingDocs;
+};
 
 export const getFollowBeUnReal = async (userId: string) => {
   try {
