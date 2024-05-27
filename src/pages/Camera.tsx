@@ -3,15 +3,7 @@ import {
   CameraPreview,
   CameraPreviewOptions,
 } from "@capacitor-community/camera-preview";
-import {
-  IonButton,
-  IonButtons,
-  IonContent,
-  IonHeader,
-  IonIcon,
-  IonPage,
-  IonToolbar,
-} from "@ionic/react";
+import { IonButton, IonContent, IonIcon, IonPage } from "@ionic/react";
 import { MobXProviderContext } from "mobx-react";
 import * as FA6Icons from "react-icons/fa6";
 import {
@@ -26,7 +18,8 @@ import { Toast } from "@capacitor/toast";
 import { isPlatform } from "@ionic/react";
 import { StatusBar } from "@capacitor/status-bar";
 import "./camera.css";
-import { sendSharp } from "ionicons/icons";
+import { sendSharp, cameraReverseOutline } from "ionicons/icons";
+
 const Camera: React.FC = () => {
   const { store } = React.useContext(MobXProviderContext);
   const [imageData, setImageData] = useState("");
@@ -115,6 +108,7 @@ const Camera: React.FC = () => {
       await PushNotifications.getDeliveredNotifications();
     console.log("delivered notifications", notificationList);
   };
+
   const showToast = async (msg: string) => {
     await Toast.show({
       text: msg,
@@ -148,8 +142,12 @@ const Camera: React.FC = () => {
   return (
     <IonPage>
       <IonContent fullscreen={true} className="w-full h-full">
-        <IonButton fill="clear" routerLink="/home" className="absolute top-4 left-4 z-50">
-          <FA6Icons.FaArrowLeftLong size={25} color="white"/>
+        <IonButton
+          fill="clear"
+          routerLink="/home"
+          className="absolute top-4 left-4 z-50"
+        >
+          <FA6Icons.FaArrowLeftLong size={25} color="white" />
         </IonButton>
         {imageData ? (
           <div className="w-full h-full">
@@ -169,22 +167,36 @@ const Camera: React.FC = () => {
           <div id="cameraPreview"></div>
         )}
         {!imageData ? (
-          <button
-            className="absolute bottom-10 left-1/2 transform -translate-x-1/2 w-20 h-20 border-4 border-white border-solid rounded-full flex items-center justify-center bg-transparent"
-            onClick={async () => {
-              if (isCameraRunning) {
-                CameraPreview.captureSample({
-                  quality: 100,
-                }).then((result) => {
-                  setImageData(result.value);
-                });
-              }
-            }}
-          ></button>
+          <>
+            <button
+              className="absolute bottom-10 left-1/2 transform -translate-x-1/2 w-20 h-20 border-4 border-white border-solid rounded-full flex items-center justify-center bg-transparent"
+              onClick={async () => {
+                if (isCameraRunning) {
+                  CameraPreview.captureSample({
+                    quality: 100,
+                  }).then((result) => {
+                    setImageData(result.value);
+                  });
+                }
+              }}
+            ></button>
+            <button
+              className="absolute bottom-10 left-3/4 transform -translate-x-1/2 w-20 h-20 rounded-full flex items-center justify-center bg-transparent"
+              onClick={async () => {
+                if (isCameraRunning) {
+                  CameraPreview.flip().then(() => {
+                    console.log("Camera flipped");
+                  });
+                }
+              }}
+            >
+              <IonIcon icon={cameraReverseOutline} size="large" />
+            </button>
+          </>
         ) : (
           <div className="flex justify-end pr-6">
             <IonButton
-              className="absolute bottom-10 w-auto h-16 bg-black text-white rounded-full "
+              className="absolute bottom-10 w-auto h-16 bg-black text-white rounded-full"
               onClick={async () => {
                 let coordinates = { coords: { latitude: 0, longitude: 0 } };
                 if (isPlatform("hybrid")) {
@@ -212,7 +224,6 @@ const Camera: React.FC = () => {
             </IonButton>
           </div>
         )}
-        +{" "}
       </IonContent>
     </IonPage>
   );

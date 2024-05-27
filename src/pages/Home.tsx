@@ -18,9 +18,7 @@ import * as FAIcons from "react-icons/fa";
 import SwiperCore from "swiper";
 import { Swiper, SwiperSlide } from "swiper/react";
 import "swiper/css";
-
 import { Tooltip } from "react-tooltip";
-
 import { convertTimestamp } from "../functions/convertTimestamp";
 
 const Home = () => {
