@@ -40,9 +40,10 @@ useEffect(() => {
 
 useEffect(() => {
     const fetchChatId = async () => {
-        const { tChatID } = await store.getTchatIdByParticipants(
+        const tchat = await store.getTchatIdByParticipants(
           selectedFriends.map((friend) => friend.uid)
         );
+        const tChatID = tchat?.tChatID;
         console.log(tChatID);
         setChatId(tChatID);
     }

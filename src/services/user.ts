@@ -180,24 +180,27 @@ export class UserService {
     console.log("User deleted");
   };
 
-  getUserProfile = async () => {
+  getUserProfile = () => {
     let user = this.auth.currentUser;
     console.log(user);
 
     var userRef = doc(this.db, "users", user!.uid);
 
-    const docSnap = await getDoc(userRef);
+    const unsubscribe = onSnapshot(userRef, (docSnap) => {
+      if (docSnap.exists()) {
+        console.log("Document data:", docSnap.data());
+        return {
+          ...docSnap.data(),
+          id: user!.uid,
+        };
+      } else {
+        console.log("No such document!", user!.uid);
+        return null;
+      }
+    });
 
-    if (docSnap.exists()) {
-      console.log("Document data:", docSnap.data());
-      return {
-        ...docSnap.data(),
-        id: user!.uid,
-      };
-    } else {
-      console.log("No such document!", user!.uid);
-      return null;
-    }
+    // Retourner la fonction de désabonnement pour permettre d'arrêter l'écoute des mises à jour
+    return unsubscribe;
   };
 
   queryObjectCollection = async ({ collectionName }: QueryParams) => {

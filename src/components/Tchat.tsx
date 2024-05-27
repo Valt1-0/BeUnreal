@@ -71,14 +71,16 @@ useEffect(() => {
   useEffect(() => {
     scrollToBottom();
   }, [tchatMessages]);
-
-  useEffect(() => {
     const fetchTchatMessage = async () => {
       await getTchatMessages(id, authenticatedUser.uid);
     };
-    fetchTchatMessage();
-  }, [id]);
 
+
+
+      
+  useEffect(() => {
+    fetchTchatMessage();
+  }, []);
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       setImageFile(e.target.files[0]);
