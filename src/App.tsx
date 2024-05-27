@@ -37,6 +37,7 @@ import Header from "./components/Header";
 import Tchat from "./pages/Tchat";
 import FriendsPage from "./pages/FriendsPage";
 import { Toast } from "@capacitor/toast";
+import CreateTchatPage from "./pages/CreateTchatPage";
 
 setupIonicReact();
 
@@ -59,7 +60,8 @@ const PublicRoutes: React.FC = () => {
       <IonRouterOutlet>
         <Route path="/home" component={Home} />
         <Route path="/tchat" component={TchatPage} exact={true} />
-        <Route path={"/tchat/:id"} component={Tchat} exact={true} />
+        <Route path="/tchat/create/test" component={CreateTchatPage} exact={true} />
+        <Route path="/tchat/:id" component={Tchat} exact={true} />
         <Route path={"/friends"} component={FriendsPage} exact={true} />
         <Redirect to="/home" />
       </IonRouterOutlet>

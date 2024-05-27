@@ -254,6 +254,9 @@ export const getBeReal = async (uid: string) => {
 //   }
 // };
 
+
+
+
 export const uploadImage = async (blob: Blob) => {
   let currentUserId = auth.currentUser!.uid;
   const storageRef = ref(
@@ -330,9 +333,9 @@ export const sendMessage = async (
   });
 };
 
-export const createChat = async (participants: string[]) => {
+export const createChat = async (_participants: string[]) => {
   const chatRef = collection(db, "chats");
-
+const participants = [..._participants].sort();
   // Requête pour trouver un chat existant avec les mêmes participants
   const q = query(chatRef, where("participants", "==", participants));
   const querySnapshot = await getDocs(q);
@@ -481,6 +484,28 @@ export const getLatestMessage = (
     const message: Message = snapshot.docs[0]?.data() as Message;
     callback(message);
   });
+};
+
+
+export const getChatIdByParticipants = async (
+  participants: string[]
+): Promise<string | null> => {
+  const chatRef = collection(db, "chats");
+
+  // Trier les participants
+  const sortedParticipants = [...participants].sort();
+console.log(sortedParticipants);
+  // Requête pour trouver un chat existant avec les mêmes participants
+  const q = query(chatRef, where("participants", "==", sortedParticipants));
+  const querySnapshot = await getDocs(q);
+
+  if (!querySnapshot.empty) {
+    // Le chat existe déjà, retourner son id
+    return querySnapshot.docs[0].id;
+  } else {
+    // Le chat n'existe pas
+    return null;
+  }
 };
 
 // export const sendFriendRequest = async (

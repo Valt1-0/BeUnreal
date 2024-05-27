@@ -9,12 +9,11 @@ import { get, set, entries, remove } from "mobx";
 import * as firebaseService from "./Firebase";
 
 import { UserService } from "../services/user";
-import {FriendsService} from "../services/friends";
-  const userService = new UserService();
-  const friendsService = new FriendsService();
-  
-export class Store {
+import { FriendsService } from "../services/friends";
+const userService = new UserService();
+const friendsService = new FriendsService();
 
+export class Store {
   activeUser: any = null;
   loading: boolean = false;
   authCheckComplete: boolean = false;
@@ -44,6 +43,7 @@ export class Store {
       authenticatedUser: computed,
       // doCheckAuth: computed,
       getTchatMessages: action,
+      getTchatIdByParticipants : action,
       getTchats: action,
       getUsers: action,
       doCreateUser: action,
@@ -69,8 +69,8 @@ export class Store {
 
     this.getUsers = this.getUsers.bind(this);
     this.initializeStore().then((u: any) => {
-    this.activeUser = u;
-    this.authCheckComplete = true;
+      this.activeUser = u;
+      this.authCheckComplete = true;
     });
   }
 
@@ -88,7 +88,8 @@ export class Store {
   };
 
   async initializeStore() {
-    return userService.authCheck(this.handleAuthedUser)
+    return userService
+      .authCheck(this.handleAuthedUser)
       .then((_user: any) => {
         return _user;
       })
@@ -118,6 +119,22 @@ export class Store {
   get authenticatedUser() {
     return this.activeUser || null;
   }
+
+  async getTchatIdByParticipants(_participants: string[]) {
+    try {
+      if (this.activeUser?.uid && _participants.length > 0) {
+        const participants = [..._participants, this.activeUser.uid];
+        const chatId = await firebaseService.getChatIdByParticipants(
+          participants
+        );
+        return chatId;
+      } else return null;
+    } catch (error) {
+      console.error("Error getting chat id: ", error);
+      return null;
+    }
+  }
+
   getTchats() {
     firebaseService.getChats(this.activeUser?.uid, (chats: any[]) => {
       // Handle the chats data here
@@ -410,8 +427,7 @@ export class Store {
     }
   }
 
-  async doGetBeReal(_userId?:string) 
-  {
+  async doGetBeReal(_userId?: string) {
     try {
       const userId = _userId || this.activeUser.uid;
       return await firebaseService.getBeReal(userId);
