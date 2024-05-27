@@ -160,7 +160,7 @@ const Home = () => {
             )}
           </Swiper>
         </div>
-        {discoveredBeUnReal.length > 0 && (
+       
           <div className="mt-4">
             <IonText className="font-eloquiabold text-lg m-3">
               Découvertes dans votre entourage
@@ -191,7 +191,7 @@ const Home = () => {
               </Swiper>
             </div>
           </div>
-        )}
+       
 
         <div>
           <IonButton

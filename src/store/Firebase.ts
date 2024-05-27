@@ -83,15 +83,16 @@ export const getNearbyNonFollowedUnBeReal = async (
   currentLocation: { latitude: number; longitude: number }
 ) => {
   // Récupérer la liste des personnes suivies par l'utilisateur actuel
-  const currentUserDoc = await getDoc(doc(db, "users", currentUserId));
-  const followedUsers = currentUserDoc.data()?.followedUsers || [];
+const followersCollection = collection(db, "users", currentUserId, "following");
+const followerDocs = await getDocs(followersCollection);
+const followedUsers = followerDocs.docs.map((doc) => doc.id); 
 
   // Définir le centre et le rayon pour la requête geohash
   const center: geofire.Geopoint = [
     currentLocation.latitude,
     currentLocation.longitude,
   ];
-  const radiusInM = 30 * 1000;
+  const radiusInM = 9000 * 1000;
 
   // Obtenir les limites de la requête geohash
   const bounds = geofire.geohashQueryBounds(center, radiusInM);
@@ -109,6 +110,7 @@ export const getNearbyNonFollowedUnBeReal = async (
   // Collecter tous les résultats de la requête dans une seule liste
   const snapshots = await Promise.all(promises);
 
+
   const matchingDocs = [];
   for (const snap of snapshots) {
     for (const snapDoc of snap.docs) {
@@ -121,6 +123,7 @@ export const getNearbyNonFollowedUnBeReal = async (
         center
       );
       const distanceInM = distanceInKm * 1000;
+
       if (
         distanceInM <= radiusInM &&
         !followedUsers.includes(snapDoc.data().uid) &&
@@ -133,7 +136,6 @@ export const getNearbyNonFollowedUnBeReal = async (
       }
     }
   }
-
   return matchingDocs;
 };
 
