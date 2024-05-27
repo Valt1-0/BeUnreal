@@ -17,7 +17,6 @@ interface UserInfo {
   email: string;
   password: string;
 }
-
 export class Store {
   activeUser: any = null;
   loading: boolean = false;
@@ -31,7 +30,7 @@ export class Store {
   followingUsers: any[] = [];
   pendingFriendRequests: any[] = [];
   pendingFriendRequestsRealtime: any[] = [];
-  unsubscribeUserProfile: (() => void) | null = null;
+
   constructor() {
     makeObservable(this, {
       activeUser: observable,
@@ -45,7 +44,6 @@ export class Store {
       usersNotFollowed: observable,
       followingUsers: observable,
       pendingFriendRequests: observable,
-      unsubscribeUserProfile: observable,
       authenticatedUser: computed,
 
       // doCheckAuth: computed,
@@ -74,8 +72,8 @@ export class Store {
       doGetBeReal: action,
       doGetNearbyNonFollowedunBeReal: action,
       doDeleteTchat: action,
-      doUpdateUser: action,
-      doDeleteUser: action,
+      doUpdateUser : action,
+      doDeleteUser : action,
     });
 
     this.getUsers = this.getUsers.bind(this);
@@ -85,27 +83,15 @@ export class Store {
     });
   }
 
-  handleAuthedUser = (_authUser: any) => {
+  handleAuthedUser = async (_authUser: any) => {
     if (_authUser) {
-      const unsubscribe = userService.getUserProfile();
+      let userAcctInfo = await userService.getUserProfile();
       console.log("setting active user");
+      this.activeUser = { ..._authUser, ...userAcctInfo };
 
-      // Stocker la fonction de désabonnement pour pouvoir arrêter l'écoute des mises à jour plus tard
-      this.unsubscribeUserProfile = unsubscribe;
-
-      // Charger les données initiales
-      this.loadData();
-
-      // Mettre à jour l'utilisateur actif
-      this.activeUser = _authUser;
+      await this.loadData();
     } else {
-      // Si l'utilisateur se déconnecte, arrêter l'écoute des mises à jour du profil de l'utilisateur
-      if (this.unsubscribeUserProfile) {
-        this.unsubscribeUserProfile();
-        this.unsubscribeUserProfile = null;
-      }
-
-      this.activeUser = null;
+      this.activeUser = _authUser;
     }
     return this.activeUser;
   };
@@ -135,7 +121,7 @@ export class Store {
 
   async doUpdateUser(updatedInfo: Partial<UserInfo>) {
     try {
-      await userService.updateUser(this.activeUser.uid, updatedInfo);
+      await userService.updateUser(this.activeUser, updatedInfo);
       return true;
     } catch (err) {
       console.error("Error updating user: ", err);
@@ -179,18 +165,18 @@ export class Store {
     }
   }
 
-  getTchats() {
-    return new Promise((resolve, reject) => {
-      firebaseService.getChats(this.activeUser?.uid, (chats: any[]) => {
-        // Handle the chats data here
-        console.log(chats);
-        runInAction(() => {
-          this.tchats = chats;
-          resolve(this.tchats);
-        });
+getTchats() {
+  return new Promise((resolve, reject) => {
+    firebaseService.getChats(this.activeUser?.uid, (chats: any[]) => {
+      // Handle the chats data here
+      console.log(chats);
+      runInAction(() => {
+        this.tchats = chats;
+        resolve(this.tchats);
       });
     });
-  }
+  });
+}
 
   async getUsers(username?: string) {
     try {

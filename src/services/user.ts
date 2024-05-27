@@ -1,3 +1,4 @@
+
 import { initializeApp } from "firebase/app";
 import {
   getAuth,
@@ -8,6 +9,7 @@ import {
   User,
   updateCurrentUser,
   signInWithCredential,
+  EmailAuthProvider,
 } from "firebase/auth";
 import {
   getFirestore,
@@ -41,18 +43,18 @@ import {
   uploadString,
   FirebaseStorage,
 } from "firebase/storage";
-import { Auth,EmailAuthProvider } from "firebase/auth";
+import { Auth } from "firebase/auth";
 import config from "./../config";
 
 interface AddObjectParams {
   collectionName: string;
   objectData: any;
 }
-interface UserInfo {
-  username: string;
-  email: string;
-  password: string;
-}
+  interface UserInfo {
+    username: string;
+    email: string;
+    password: string;
+  }
 interface QueryParams {
   collectionName: string;
 }
@@ -190,34 +192,32 @@ export class UserService {
     // Demander à l'utilisateur de fournir à nouveau ses identifiants
     const password = prompt("Please enter your password") || ""; // Provide a default value for password if the user cancels the prompt
     const user = this.auth.currentUser;
-    if (user && user.email) { // Check if user.email is not null
+    if (user && user.email) {
+      // Check if user.email is not null
       const credential = EmailAuthProvider.credential(user.email, password);
       return credential;
     }
     return null;
   };
 
-  getUserProfile = () => {
+  getUserProfile = async () => {
     let user = this.auth.currentUser;
     console.log(user);
 
     var userRef = doc(this.db, "users", user!.uid);
 
-    const unsubscribe = onSnapshot(userRef, (docSnap) => {
-      if (docSnap.exists()) {
-        console.log("Document data:", docSnap.data());
-        return {
-          ...docSnap.data(),
-          id: user!.uid,
-        };
-      } else {
-        console.log("No such document!", user!.uid);
-        return null;
-      }
-    });
+    const docSnap = await getDoc(userRef);
 
-    // Retourner la fonction de désabonnement pour permettre d'arrêter l'écoute des mises à jour
-    return unsubscribe;
+    if (docSnap.exists()) {
+      console.log("Document data:", docSnap.data());
+      return {
+        ...docSnap.data(),
+        id: user!.uid,
+      };
+    } else {
+      console.log("No such document!", user!.uid);
+      return null;
+    }
   };
 
   queryObjectCollection = async ({ collectionName }: QueryParams) => {
