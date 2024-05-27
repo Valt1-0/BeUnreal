@@ -4,6 +4,7 @@ export default {
   theme: {
     fontSize: {
       x: "0.5rem",
+      '2x': "0.75rem"
     },
     extend: {
       fontFamily: {

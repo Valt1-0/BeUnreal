@@ -18,6 +18,7 @@ import {
   IonInfiniteScroll,
   IonInfiniteScrollContent,
 } from "@ionic/react";
+import * as FA6Icons from "react-icons/fa6";
 import { arrowForward } from "ionicons/icons";
 interface User {
   id: string;
@@ -70,36 +71,36 @@ const FriendsPage: React.FC = () => {
     setUsersNotFollowed(usersNotFollowed);
   }, [usersNotFollowed]);
 
-useEffect(() => {
-  const unsubscribes: { [key: string]: any } = {};
+  useEffect(() => {
+    const unsubscribes: { [key: string]: any } = {};
 
-  const FetchAllUserSuggestions = async () => {
-    unsubscribes["suggestions"] = await store.doGetUsersNotFollowed();
-  };
+    const FetchAllUserSuggestions = async () => {
+      unsubscribes["suggestions"] = await store.doGetUsersNotFollowed();
+    };
 
-  const FetchAllUserFriends = async () => {
-    unsubscribes["friends"] = await store.doGetFollowingUsers();
-  };
+    const FetchAllUserFriends = async () => {
+      unsubscribes["friends"] = await store.doGetFollowingUsers();
+    };
 
-  const FetchAllUserRequest = async () => {
-     unsubscribes["requests"] = await store.doGetPendingFriendRequestsRealtime();
-  };
+    const FetchAllUserRequest = async () => {
+      unsubscribes["requests"] =
+        await store.doGetPendingFriendRequestsRealtime();
+    };
 
-  if (selectedSegment == "suggestions") FetchAllUserSuggestions();
-  else if (selectedSegment == "friends") FetchAllUserFriends();
-  else if (selectedSegment == "requests") FetchAllUserRequest();
+    if (selectedSegment == "suggestions") FetchAllUserSuggestions();
+    else if (selectedSegment == "friends") FetchAllUserFriends();
+    else if (selectedSegment == "requests") FetchAllUserRequest();
 
-  return () => {
-    if (unsubscribes[selectedSegment]) {
-      unsubscribes[selectedSegment]();
-    }
-  };
-}, [selectedSegment, searchTerm]);
+    return () => {
+      if (unsubscribes[selectedSegment]) {
+        unsubscribes[selectedSegment]();
+      }
+    };
+  }, [selectedSegment, searchTerm]);
 
   const handleUnFollowUser = async (unfollowUserId: string) => {
     await store.doUnFollow(unfollowUserId);
-  }
-
+  };
 
   const handleFollowUser = async (user: User) => {
     await store.doFollowUser(user);
@@ -115,10 +116,10 @@ useEffect(() => {
   return (
     <IonPage>
       <IonHeader>
-        <IonToolbar color={"black"}>
+        <IonToolbar>
           <IonButtons slot="end">
             <IonButton routerLink="/home">
-              <IonIcon icon={arrowForward} />
+              <FA6Icons.FaArrowRightLong size={25} />
             </IonButton>
           </IonButtons>
         </IonToolbar>

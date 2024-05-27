@@ -21,39 +21,22 @@ import "swiper/css";
 
 import { Tooltip } from "react-tooltip";
 
-function convertTimestamp(timestamp: {
-  nanoseconds: number;
-  seconds: number;
-}): { date: string; time: string } {
-  const date = new Date(
-    timestamp.seconds * 1000 + timestamp.nanoseconds / 1000000
-  );
-
-  const optionsDate: Intl.DateTimeFormatOptions = {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-  };
-  const optionsTime: Intl.DateTimeFormatOptions = {
-    hour: "2-digit",
-    minute: "2-digit",
-  };
-
-  const formattedDate = date.toLocaleDateString(undefined, optionsDate);
-  const formattedTime = date.toLocaleTimeString(undefined, optionsTime);
-
-  return { date: formattedDate, time: formattedTime };
-}
+import { convertTimestamp } from "../functions/convertTimestamp";
 
 const Home = () => {
   const { store } = React.useContext(MobXProviderContext);
   const [myBeUnreal, setMyBeUnreal] = useState<any>([]);
+  const [followerBeUnReal, setFollowerBeUnReal] = useState<any>([]);
   const [isOpen, setIsOpen] = useState(false);
 
   useEffect(() => {
-    store.doGetBeReal().then((r: any) => {
-      setMyBeUnreal(r);
-      console.log(r);
+    store.doGetBeReal().then((b: any) => {
+      setMyBeUnreal(b);
+    });
+
+    store.doGetFollowBeUnReal().then((b: any) => {
+      setFollowerBeUnReal(b);
+      console.log(b);
     });
   }, []);
 
@@ -94,69 +77,82 @@ const Home = () => {
           <IonText className="font-eloquiabold text-lg m-3">
             Mes BeUnreal
           </IonText>
-          <div className="scroll-container">
-            <Swiper
-              slidesPerView={3}
-              spaceBetween={20}
-              pagination={{
-                clickable: true,
-              }}
-            >
-              {myBeUnreal.map((card: any, index: number) => {
-                const { date, time } = convertTimestamp(card.timestamp);
-                return (
-                  <SwiperSlide key={index}>
-                    <IonCard>
-                      <IonImg
-                        src={card.url}
-                        style={{ width: "100%", height: "auto" }}
-                      />
-                      <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 p-1 flex justify-center items-center text-black bg-white bg-opacity-70 rounded-md shadow-lg">
-                        <FAIcons.FaCalendarAlt className="mr-2" />
-                        <Tooltip id={`tooltip-${index}`} place="top">
-                          <p className="text-x font-eloquiabold">{date}</p>
-                        </Tooltip>
-                        <a
-                          data-tooltip-id={`tooltip-${index}`}
-                          data-tooltip-content={time}
-                        >
-                          <p className="text-x font-eloquiabold">{date}</p>
-                        </a>
-                      </div>
-                    </IonCard>
-                  </SwiperSlide>
-                );
-              })}
-            </Swiper>
-          </div>
+          <Swiper
+            slidesPerView={3}
+            spaceBetween={20}
+            pagination={{
+              clickable: true,
+            }}
+          >
+            {myBeUnreal.map((card: any, index: number) => {
+              const { date, time } = convertTimestamp(card.timestamp);
+              return (
+                <SwiperSlide key={index}>
+                  <IonCard>
+                    <IonImg
+                      src={card.url}
+                      style={{ width: "100%", height: "auto" }}
+                    />
+                    <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 p-1 flex justify-center items-center text-black bg-white bg-opacity-70 rounded-md shadow-lg">
+                      <FAIcons.FaCalendarAlt className="mr-2" />
+                      <Tooltip id={`tooltip-${index}`} place="top">
+                        <p className="text-x font-eloquiabold">{date}</p>
+                      </Tooltip>
+                      <a
+                        data-tooltip-id={`tooltip-${index}`}
+                        data-tooltip-content={time}
+                      >
+                        <p className="text-x font-eloquiabold">{date}</p>
+                      </a>
+                    </div>
+                  </IonCard>
+                </SwiperSlide>
+              );
+            })}
+          </Swiper>
         </div>
         <div className="mt-4">
           <IonText className="font-eloquiabold text-lg m-3">
             BeUnreal de mes amis
           </IonText>
-          <div className="scroll-container">
-            <Swiper
-              slidesPerView={3}
-              spaceBetween={20}
-              pagination={{
-                clickable: true,
-              }}
-            >
-              {cardData.map((card, index) => (
-                <SwiperSlide key={index}>
-                  <IonCard>
-                    <IonImg
-                      src="https://placehold.co/1440x2560"
-                      style={{ width: "100%", height: "auto" }}
-                    />
-                    <div className="absolute bottom-0 left-2 p-2 text-black bg-white rounded-md">
-                      <p className="text-sm">{card.title}</p>
-                    </div>
-                  </IonCard>
-                </SwiperSlide>
-              ))}
-            </Swiper>
-          </div>
+          <Swiper
+            slidesPerView={3}
+            spaceBetween={20}
+            pagination={{
+              clickable: true,
+            }}
+          >
+            {followerBeUnReal.map(
+              (followerBeUnrealArray: any[], arrayIndex: number) => {
+                const lastBeUnreal = followerBeUnrealArray.sort(
+                  (a, b) => b.timestamp - a.timestamp
+                )[0];
+
+                if (!lastBeUnreal) {
+                  return null;
+                }
+
+                return (
+                  <div key={arrayIndex}>
+                    <h2>Follower {arrayIndex + 1}</h2>
+                    <SwiperSlide key={arrayIndex}>
+                      <IonCard>
+                        <IonImg
+                          src={lastBeUnreal.url}
+                          style={{ width: "100%", height: "auto" }}
+                        />
+                        <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 p-1 flex justify-center items-center text-black bg-white bg-opacity-70 rounded-md shadow-lg">
+                          <p className="text-2x font-eloquiabold">
+                            {lastBeUnreal.user.username}
+                          </p>
+                        </div>
+                      </IonCard>
+                    </SwiperSlide>
+                  </div>
+                );
+              }
+            )}
+          </Swiper>
         </div>
         <div className="mt-4">
           <IonText className="font-eloquiabold text-lg m-3">
