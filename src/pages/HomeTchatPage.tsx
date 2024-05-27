@@ -23,7 +23,7 @@ import { useHistory } from "react-router";
 
 const Tchat: React.FC = () => {
   const { store } = React.useContext(MobXProviderContext);
-  let { authenticatedUser, initializationError,tchats } = store;
+  let { authenticatedUser,tchats } = store;
 
 
   useEffect(() => {
@@ -37,7 +37,6 @@ const Tchat: React.FC = () => {
     fetchTchats();
   }, []);
 
-console.log(tchats);
 
   return (
     <IonPage>

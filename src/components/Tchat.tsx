@@ -1,17 +1,12 @@
 import React, { useState, useEffect, useRef } from "react";
 import {
-  IonContent,
-  IonPage,
   IonButton,
-  IonToolbar,
-  IonInput,
   IonTextarea,
 } from "@ionic/react";
-import { MobXProviderContext, observer } from "mobx-react";
-import { useParams } from "react-router-dom";
+import { observer } from "mobx-react";
 import { Message } from "../store/Firebase";
-import { serverTimestamp } from "firebase/firestore";
-import { Keyboard } from "@capacitor/keyboard";
+import { FaFileImage, FaCamera } from "react-icons/fa";
+
 interface TchatProps {
   id: string;
   authenticatedUser: any;
@@ -40,30 +35,12 @@ const Tchat: React.FC<TchatProps> = ({
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const fileInput = React.useRef<HTMLInputElement>(null);
 
-  console.log("tchatMesasge ", tchatMessages);
-
 
 useEffect(() => {
   scrollToBottom();
 },[bottom]);
 
-// useEffect(() => {
-//   const handleShow = (info: any) => {
-//     setBottom(info.keyboardHeight);
-//     setTimeout(scrollToBottom, 300); // Ajoutez un délai
-//   };
-//   const handleHide = () => {
-//     setBottom(0);
-//     setTimeout(scrollToBottom, 300); // Ajoutez un délai
-//   };
 
-//   Keyboard.addListener("keyboardDidShow", handleShow);
-//   Keyboard.addListener("keyboardDidHide", handleHide);
-
-//   return () => {
-//     Keyboard.removeAllListeners();
-//   };
-// }, []);
   const scrollToBottom = () => {
     endOfMessagesRef.current?.scrollIntoView({ behavior: "smooth" });
   };
@@ -188,19 +165,30 @@ useEffect(() => {
           )}
       </div>
       <div className=" flex max-h-28 w-full bg-black bottom-0">
-        <input
-          type="file"
-          accept="image/*"
-          onChange={handleFileChange}
-          ref={fileInput}
-        />
-        <input
-          type="file"
-          accept="image/*"
-          capture="user"
-          onChange={handleFileChange}
-          ref={fileInput}
-        />
+        <div className="flex items-center h-full justify-center ">
+          <label className="mr-3">
+            <FaFileImage size={25} />
+            <input
+              type="file"
+              accept="image/*"
+              onChange={handleFileChange}
+              ref={fileInput}
+              style={{ display: "none" }} // cache l'input par défaut
+            />
+          </label>
+
+          <label>
+            <FaCamera size={25} />
+            <input
+              type="file"
+              accept="image/*"
+              capture="user"
+              onChange={handleFileChange}
+              ref={fileInput}
+              style={{ display: "none" }} // cache l'input par défaut
+            />
+          </label>
+        </div>
         <IonTextarea
           rows={1}
           autoGrow={true}
@@ -210,12 +198,7 @@ useEffect(() => {
           value={message}
           onIonInput={(e) => setMessage(e.detail.value!)}
         ></IonTextarea>
-        {/* <input
-            placeholder="Aa"
-            className="mx-4 text-white border-2 border-white font-eloquiabold p-2 rounded-lg"
-            value={message}
-            onChange={(e) => setMessage(e.target.value)}
-          /> */}
+
         <IonButton className="h-10" onClick={sendMessage}>
           Send
         </IonButton>

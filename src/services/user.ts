@@ -106,7 +106,6 @@ export class UserService {
       uid: doc.id,
       ...doc.data(),
     }));
-    console.log("users: ", users);
     return users;
   };
 
@@ -123,7 +122,6 @@ export class UserService {
   };
 
   registerUser = async (userInfo: UserInfo) => {
-    console.log("in registerUser");
     return createUserWithEmailAndPassword(
       this.auth,
       userInfo.email,
@@ -209,7 +207,6 @@ export class UserService {
     const docSnap = await getDoc(userRef);
 
     if (docSnap.exists()) {
-      console.log("Document data:", docSnap.data());
       return {
         ...docSnap.data(),
         id: user!.uid,

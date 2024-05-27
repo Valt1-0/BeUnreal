@@ -44,7 +44,6 @@ useEffect(() => {
           selectedFriends.map((friend) => friend.uid)
         );
         const tChatID = tchat?.tChatID;
-        console.log(tChatID);
         setChatId(tChatID);
     }
     fetchChatId();

@@ -19,8 +19,6 @@ const TchatPage: React.FC = () => {
   const { followingUsers, authenticatedUser, tchatMessages } = store;
   const { id } = useParams<{ id: string }>();
 
-console.log(id);
-
   return (
     <IonPage >
       <IonHeader>

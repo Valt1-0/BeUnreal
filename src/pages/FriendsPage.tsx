@@ -67,7 +67,6 @@ const FriendsPage: React.FC = () => {
   };
 
   useEffect(() => {
-    console.log("test");
     setUsersNotFollowed(usersNotFollowed);
   }, [usersNotFollowed]);
 
@@ -107,8 +106,6 @@ const FriendsPage: React.FC = () => {
   };
 
   const handleFriendRequest = async (_userId: string, accepted: Boolean) => {
-    console.log(_userId, accepted);
-
     if (accepted) await store.doAcceptFriendRequest(_userId);
     else await store.doRejectFriendRequest(_userId);
   };
@@ -149,7 +146,6 @@ const FriendsPage: React.FC = () => {
                     }
                     onClick={() => {
                       if (user.status === "notFollowed") {
-                        console.log("follow", user.uid);
                         handleFollowUser(user.uid);
                       }
                     }}

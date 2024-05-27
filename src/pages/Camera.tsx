@@ -3,7 +3,13 @@ import {
   CameraPreview,
   CameraPreviewOptions,
 } from "@capacitor-community/camera-preview";
-import { IonBackButton, IonButton, IonContent, IonIcon, IonPage } from "@ionic/react";
+import {
+  IonBackButton,
+  IonButton,
+  IonContent,
+  IonIcon,
+  IonPage,
+} from "@ionic/react";
 import { MobXProviderContext } from "mobx-react";
 import * as FA6Icons from "react-icons/fa6";
 import {
@@ -41,8 +47,7 @@ const Camera: React.FC = () => {
 
   const addListeners = async () => {
     await PushNotifications.addListener("registration", (token) => {
-      console.info("Registration token: ", token.value);
-      showToast(`Push registration success ${token.value}`);
+      showToast(`Push registration success`);
     });
 
     await PushNotifications.addListener("registrationError", (err) => {
@@ -140,7 +145,7 @@ const Camera: React.FC = () => {
   return (
     <IonPage>
       <IonContent fullscreen={true} className="w-full h-full">
-        <IonBackButton 
+        <IonBackButton
           defaultHref="/home"
           className="absolute top-4 left-4 z-50"
         >
@@ -206,7 +211,6 @@ const Camera: React.FC = () => {
                   },
                   `data:image/jpeg;base64,${imageData}`
                 );
-                console.log(save);
                 if (save) {
                   showToast("Image saved successfully");
                   setImageData("");

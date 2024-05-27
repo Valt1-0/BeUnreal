@@ -51,8 +51,6 @@ export class FriendsService {
   storage = getStorage(this.app);
 
   sendFriendRequest = async (currentUserId: string, friendUserId: string) => {
-    console.log("sendFriendRequest", currentUserId, friendUserId);
-    // Ajouter une demande d'ami à la collection "friendRequests"
     await setDoc(
       doc(
         collection(this.db, "friendRequests"),
@@ -92,7 +90,7 @@ export class FriendsService {
         "L'utilisateur a été supprimé de la liste d'amis avec succès."
       );
     } catch (error) {
-      console.log(
+      console.error(
         "Une erreur s'est produite lors de la suppression de l'utilisateur de la liste d'amis: ",
         error
       );
@@ -202,7 +200,6 @@ export class FriendsService {
             };
           })
         );
-        console.log("requests", requests);
         callback(requests);
       }
     );
@@ -227,7 +224,6 @@ export class FriendsService {
           })
         );
 
-        console.log(following);
         callback(following);
       }
     );
@@ -252,7 +248,6 @@ export class FriendsService {
           });
         });
 
-        console.log("followingUsers", followingUsers);
         interface RequestData {
           uuid: string;
           from: string;
@@ -300,7 +295,6 @@ export class FriendsService {
                 };
               }
             });
-            console.log("usersWithStatus", usersWithStatus);
             callback(usersWithStatus);
           }
         );

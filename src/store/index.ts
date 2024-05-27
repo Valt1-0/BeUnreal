@@ -72,8 +72,8 @@ export class Store {
       doGetBeReal: action,
       doGetNearbyNonFollowedunBeReal: action,
       doDeleteTchat: action,
-      doUpdateUser : action,
-      doDeleteUser : action,
+      doUpdateUser: action,
+      doDeleteUser: action,
     });
 
     this.getUsers = this.getUsers.bind(this);
@@ -140,7 +140,6 @@ export class Store {
   getTchatMessages = (_chatId: string, _userID: string) => {
     if (!_chatId || !_userID) return null;
     return firebaseService.getMessages(_chatId, _userID, (messages: any[]) => {
-      console.log(messages);
       runInAction(() => {
         this.tchatMessages = messages;
       });
@@ -165,23 +164,21 @@ export class Store {
     }
   }
 
-getTchats() {
-  return new Promise((resolve, reject) => {
-    firebaseService.getChats(this.activeUser?.uid, (chats: any[]) => {
-      // Handle the chats data here
-      console.log(chats);
-      runInAction(() => {
-        this.tchats = chats;
-        resolve(this.tchats);
+  getTchats() {
+    return new Promise((resolve, reject) => {
+      firebaseService.getChats(this.activeUser?.uid, (chats: any[]) => {
+        // Handle the chats
+        runInAction(() => {
+          this.tchats = chats;
+          resolve(this.tchats);
+        });
       });
     });
-  });
-}
+  }
 
   async getUsers(username?: string) {
     try {
       const users = await userService.getUsers(username);
-      console.log("userss :", users);
       runInAction(() => {
         this.users = users;
       });
@@ -201,12 +198,12 @@ getTchats() {
             return _result;
           },
           (err: any) => {
-            console.log(err);
+            console.error(err);
             return err;
           }
         )
         .catch((e: any) => {
-          console.log(e);
+          console.error(e);
           return e;
         });
     }
@@ -247,57 +244,15 @@ getTchats() {
           });
         },
         (err: any) => {
-          console.log(err);
+          console.error(err);
           return err;
         }
       )
       .catch((e: any) => {
-        console.log(e);
+        console.error(e);
         return e;
       });
   }
-
-  // addItem(_data: any) {
-  //   return firebaseService
-  //     .addObjectToCollection({ collectionName: "items", objectData: _data })
-  //     .then(
-  //       (_result: any) => {
-  //         return runInAction(() => {
-  //           set(this.items, _result.id, _result);
-  //           return _result;
-  //         });
-  //       },
-  //       (err: any) => {
-  //         console.log(err);
-  //         return err;
-  //       }
-  //     )
-  //     .catch((e: any) => {
-  //       console.log(e);
-  //       return e;
-  //     });
-  // }
-
-  // deleteItem(_data: any) {
-  //   return firebaseService
-  //     .removeObjectFromCollection({ collection: "items", objectId: _data.id })
-  //     .then(
-  //       (_result: any) => {
-  //         return runInAction(() => {
-  //           remove(this.items, _data.id);
-  //           return true;
-  //         });
-  //       },
-  //       (err: any) => {
-  //         console.log(err);
-  //         return err;
-  //       }
-  //     )
-  //     .catch((e: any) => {
-  //       console.log(e);
-  //       return e;
-  //     });
-  // }
 
   async doCreateChat(_participants: string[]) {
     try {
@@ -309,7 +264,6 @@ getTchats() {
 
   async doDeleteTchat(_tchatID: string) {
     try {
-      console.log("test delete");
       await firebaseService.deleteUserChat(this.activeUser.uid, _tchatID);
       return true;
     } catch (err) {
@@ -325,34 +279,10 @@ getTchats() {
     try {
       return await firebaseService.sendMessage(_chatId, _message, _imageFile);
     } catch (err) {
-      console.log(err);
+      console.error(err);
       return err;
     }
   }
-
-  // doGetUsersNotFollowed(_status?: string, lastUser?: DocumentSnapshot) {
-  //   try {
-  //     // Appeler getUsersFollowWithStatus et stocker la fonction de désinscription
-  //     const unsubscribe =
-  //       firebaseService.getUsersFollowWithStatus(
-  //         this.activeUser.uid,
-  //         _status,
-  //         lastUser,
-  //         (users) => {
-  //           // Mettre à jour usersNotFollowed chaque fois que les utilisateurs sont modifiés
-  //           runInAction(() => {
-  //             this.usersNotFollowed = users;
-  //           });
-  //         }
-  //       );
-
-  //     // Retourner la fonction de désinscription pour permettre d'arrêter l'écoute des modifications
-  //     return unsubscribe;
-  //   } catch (err) {
-  //     console.error("Error getting users: ", err);
-  //     return null;
-  //   }
-  // }
 
   async doFollowUser(_userId: string) {
     try {
@@ -397,20 +327,6 @@ getTchats() {
     }
   }
 
-  // async doGetPendingFriendsRequests() {
-  //   const useruid = this.activeUser.uid;
-  //   try {
-  //     const users = await firebaseService.getPendingFriendRequests(useruid);
-  //     runInAction(() => {
-  //       this.pendingFriendRequests = users;
-  //     });
-  //     return users;
-  //   } catch (err) {
-  //     console.error("Error to get following user: ", err);
-  //     return null;
-  //   }
-  // }
-
   async doAcceptFriendRequest(_userId: string) {
     try {
       await friendsService.acceptFriendRequest(this.activeUser.uid, _userId);
@@ -444,7 +360,6 @@ getTchats() {
   }
 
   async doUnFollow(unfollowUserId: string) {
-    console.log("test unfollow");
     try {
       return await friendsService.unfollowUser(
         this.activeUser.uid,
