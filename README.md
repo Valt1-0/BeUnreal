@@ -57,3 +57,15 @@ Please note that the `google-services.json` file contains sensitive information 
    - For iOS: `npx cap open ios`
    - For Android: `npx cap open android`
 3. Run the app on a simulator or physical device using the development environment.
+
+## Testing
+
+This project uses Cypress for end-to-end testing. Follow these steps to run the tests:
+
+1. Ensure that the application is running locally: `ionic serve`
+2. Open Cypress Test Runner: `npx cypress open`
+3. Click on the test file you want to run.
+
+Cypress will run the tests in a new browser window and display the results in the Test Runner.
+
+For more information on using Cypress, refer to the [Cypress documentation](https://docs.cypress.io/guides/overview/why-cypress).
