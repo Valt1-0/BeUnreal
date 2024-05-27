@@ -196,6 +196,13 @@ useEffect(() => {
           onChange={handleFileChange}
           ref={fileInput}
         />
+        <input
+          type="file"
+          accept="image/*"
+          capture="user"
+          onChange={handleFileChange}
+          ref={fileInput}
+        />
         <IonTextarea
           rows={1}
           autoGrow={true}
