@@ -63,7 +63,63 @@ export const getBeReal = async (uid: string) => {
   return beRealData;
 };
 
+export const saveBeReal = async (
+  uid: string,
+  location: { latitude: number; longitude: number },
+  imageUrl: string
+) => {
+  const timestamp = serverTimestamp();
+  const timestampUrl = Date.now();
+  // Upload the image to Firebase Storage
+  const storageRef = ref(storage, `users/${uid}/beunreal/${timestampUrl}.jpeg`);
+  await uploadString(storageRef, imageUrl, "data_url");
+  const url = await getDownloadURL(storageRef);
 
+  // Save the image data to Firestore
+  const docData = {
+    uid,
+    timestamp,
+    location,
+    url,
+  };
+
+  await addDoc(collection(db, "BeReal"), docData);
+};
+
+
+export const getFollowBeUnReal = async (userId: string) => {
+  try {
+    // Récupérer la liste des personnes que l'utilisateur suit
+    const followingSnapshot = await getDocs(
+      collection(db, "users", userId, "following")
+    );
+    const following = followingSnapshot.docs.map((doc) => doc.id);
+
+    // Récupérer les BeReal de chaque personne suivie
+    const friendsBeRealPromises = following.map((friendId: string) => {
+      const q = query(
+        collection(db, "BeReal"),
+        where("uid", "==", friendId),
+        orderBy("timestamp", "desc")
+      );
+      return getDocs(q);
+    });
+
+    const friendsBeRealSnapshots = await Promise.all(friendsBeRealPromises);
+
+    // Convertir les snapshots en données
+    const friendsBeReal = friendsBeRealSnapshots.map((snapshot) => {
+      return snapshot.docs.map((doc) => doc.data());
+    });
+
+    return friendsBeReal;
+  } catch (error) {
+    console.error(
+      "Erreur lors de la récupération des BeReal des amis: ",
+      error
+    );
+  }
+};
 // export const authCheck = async (
 //   _handleAuthedUser: (user: User | null) => Promise<any>
 // ) => {
@@ -761,28 +817,6 @@ console.log(sortedParticipants);
 //   );
 // };
 
-export const saveBeReal = async (
-  uid: string,
-  location: { latitude: number; longitude: number },
-  imageUrl: string
-) => {
-  const timestamp = serverTimestamp();
-  const timestampUrl = Date.now();
-  // Upload the image to Firebase Storage
-  const storageRef = ref(storage, `users/${uid}/beunreal/${timestampUrl}.jpeg`);
-  await uploadString(storageRef, imageUrl, "data_url");
-  const url = await getDownloadURL(storageRef);
-
-  // Save the image data to Firestore
-  const docData = {
-    uid,
-    timestamp,
-    location,
-    url,
-  };
-
-  await addDoc(collection(db, "BeReal"), docData);
-};
 
 // export const getUsersFollowWithStatus = (
 //   currentUserId: string,

@@ -437,4 +437,17 @@ export class Store {
       return null;
     }
   }
+
+  async doGetFollowBeUnReal() {
+    try {
+    const beUnReal = firebaseService.getFollowBeUnReal(this.activeUser.uid)
+    return beUnReal;
+    }
+    catch(err) {
+      console.error("Error to get be real: ", err);
+      return null;
+    }
+  }
+
+
 }
