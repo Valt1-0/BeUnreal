@@ -37,13 +37,14 @@ const Tchat: React.FC = () => {
     fetchTchats();
   }, []);
 
+console.log(tchats);
 
   return (
     <IonPage>
       <IonHeader>
         <IonToolbar>
           <IonButtons slot="start">
-            <IonBackButton defaultHref="/your-default-route" />
+            <IonBackButton defaultHref="/home" />
           </IonButtons>
 
           <IonButtons slot="end">
@@ -61,6 +62,7 @@ const Tchat: React.FC = () => {
       <IonContent>
         <IonList>
           {tchats.map((tchat: any) => (
+
             <IonItemSliding key={tchat.id}>
               <IonItem routerLink={`/tchat/${tchat.id}`}>
                 <IonAvatar slot="start">
@@ -90,7 +92,7 @@ const Tchat: React.FC = () => {
               >
                 <IonItemOption
                   color="danger"
-                  onClick={() => store.doDeleteTchat(tchat.id)}
+                  onClick={() => {store.doDeleteTchat(tchat.id)}}
                 >
                   Supprimer
                 </IonItemOption>

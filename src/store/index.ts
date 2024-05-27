@@ -30,7 +30,7 @@ export class Store {
   followingUsers: any[] = [];
   pendingFriendRequests: any[] = [];
   pendingFriendRequestsRealtime: any[] = [];
-
+  unsubscribeUserProfile: (() => void) | null = null;
   constructor() {
     makeObservable(this, {
       activeUser: observable,
@@ -44,6 +44,7 @@ export class Store {
       usersNotFollowed: observable,
       followingUsers: observable,
       pendingFriendRequests: observable,
+      unsubscribeUserProfile: observable,
       authenticatedUser: computed,
 
       // doCheckAuth: computed,
@@ -72,8 +73,8 @@ export class Store {
       doGetBeReal: action,
       doGetNearbyNonFollowedunBeReal: action,
       doDeleteTchat: action,
-      doUpdateUser : action,
-      doDeleteUser : action,
+      doUpdateUser: action,
+      doDeleteUser: action,
     });
 
     this.getUsers = this.getUsers.bind(this);
@@ -83,15 +84,27 @@ export class Store {
     });
   }
 
-  handleAuthedUser = async (_authUser: any) => {
+  handleAuthedUser = (_authUser: any) => {
     if (_authUser) {
-      let userAcctInfo = await userService.getUserProfile();
+      const unsubscribe = userService.getUserProfile();
       console.log("setting active user");
-      this.activeUser = { ..._authUser, ...userAcctInfo };
 
-      await this.loadData();
-    } else {
+      // Stocker la fonction de désabonnement pour pouvoir arrêter l'écoute des mises à jour plus tard
+      this.unsubscribeUserProfile = unsubscribe;
+
+      // Charger les données initiales
+      this.loadData();
+
+      // Mettre à jour l'utilisateur actif
       this.activeUser = _authUser;
+    } else {
+      // Si l'utilisateur se déconnecte, arrêter l'écoute des mises à jour du profil de l'utilisateur
+      if (this.unsubscribeUserProfile) {
+        this.unsubscribeUserProfile();
+        this.unsubscribeUserProfile = null;
+      }
+
+      this.activeUser = null;
     }
     return this.activeUser;
   };
@@ -166,14 +179,16 @@ export class Store {
   }
 
   getTchats() {
-    firebaseService.getChats(this.activeUser?.uid, (chats: any[]) => {
-      // Handle the chats data here
-      console.log(chats);
-      runInAction(() => {
-        this.tchats = chats;
+    return new Promise((resolve, reject) => {
+      firebaseService.getChats(this.activeUser?.uid, (chats: any[]) => {
+        // Handle the chats data here
+        console.log(chats);
+        runInAction(() => {
+          this.tchats = chats;
+          resolve(this.tchats);
+        });
       });
     });
-    return this.tchats;
   }
 
   async getUsers(username?: string) {

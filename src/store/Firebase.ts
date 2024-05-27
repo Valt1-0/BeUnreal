@@ -617,6 +617,7 @@ export const getChats = (userId: string, callback: (chats: any[]) => void) => {
     unsubscribeFunctions.forEach((unsub) => unsub());
   };
 };
+
 export const getMessages = async (
   chatId: string,
   userId: string,
