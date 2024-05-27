@@ -427,7 +427,8 @@ export class Store {
     }
   }
 
-  async doGetBeReal(_userId?: string) {
+  async doGetBeReal(_userId?:string)
+  {
     try {
       const userId = _userId || this.activeUser.uid;
       return await firebaseService.getBeReal(userId);

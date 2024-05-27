@@ -53,6 +53,8 @@ const storage = getStorage(app);
 
 export const getBeReal = async (uid: string) => {
   const q = query(collection(db, "BeReal"), where("uid", "==", uid), orderBy("timestamp", "desc"));
+  console.log(uid);
+  
   const querySnapshot = await getDocs(q);
   const beRealData:any[] = [];
   querySnapshot.forEach((doc) => {
@@ -781,6 +783,7 @@ export const saveBeReal = async (
 
   await addDoc(collection(db, "BeReal"), docData);
 };
+
 // export const getUsersFollowWithStatus = (
 //   currentUserId: string,
 //   status?: string,

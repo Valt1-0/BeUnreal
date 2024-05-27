@@ -231,6 +231,7 @@ useEffect(() => {
           className="flex justify-around w-full"
           onIonChange={handleSegmentChange}
           value={selectedSegment}
+          color={"dark"}
         >
           <IonSegmentButton value="suggestions">
             <IonLabel>Suggestions</IonLabel>

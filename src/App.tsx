@@ -11,7 +11,11 @@ import Home from "./pages/Home";
 import Register from "./pages/Register";
 import LoginPage from "./pages/LoginPage";
 import TchatPage from "./pages/TchatPage";
-import { observer, MobXProviderContext, } from "mobx-react";
+import Tchat from "./pages/Tchat";
+import FriendsPage from "./pages/FriendsPage";
+import Camera from "./pages/Camera";
+
+import { observer, MobXProviderContext } from "mobx-react";
 import { toJS, autorun } from "mobx";
 import {
   PushNotificationSchema,
@@ -19,7 +23,6 @@ import {
   Token,
   ActionPerformed,
 } from "@capacitor/push-notifications";
-
 
 /* Core CSS required for Ionic components to work properly */
 import "@ionic/react/css/core.css";
@@ -33,9 +36,7 @@ import "@ionic/react/css/palettes/dark.always.css";
 
 /* Theme variables */
 import "./theme/variables.css";
-import Header from "./components/Header";
-import Tchat from "./pages/Tchat";
-import FriendsPage from "./pages/FriendsPage";
+
 import { Toast } from "@capacitor/toast";
 import CreateTchatPage from "./pages/CreateTchatPage";
 
@@ -63,6 +64,7 @@ const PublicRoutes: React.FC = () => {
         <Route path="/tchat/create/test" component={CreateTchatPage} exact={true} />
         <Route path="/tchat/:id" component={Tchat} exact={true} />
         <Route path={"/friends"} component={FriendsPage} exact={true} />
+        <Route path={"/camera"} component={Camera} exact={true} />
         <Redirect to="/home" />
       </IonRouterOutlet>
     </IonReactRouter>
