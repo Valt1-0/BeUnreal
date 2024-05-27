@@ -18,6 +18,32 @@ BeUnreal is an Ionic app that utilizes the Capacitor plugin to provide camera an
 3. Install the dependencies: `npm install`
 4. Do the capacitor sync: `npx cap sync`
 
+## Configuration
+
+Before running the application, you need to configure your environment variables with your Firebase data:
+
+
+1. Create a `.env` file in the root of your project.
+2. Add the following information, replacing the placeholders with your Firebase data:
+
+```
+VITE_API_KEY="Your Firebase API Key"
+VITE_AUTH_DOMAIN="Your Firebase Auth Domain"
+VITE_PROJECT_ID="Your Firebase Project ID"
+VITE_STORAGE_BUCKET="Your Firebase Storage Bucket"
+VITE_MESSAGING_SENDER_ID="Your Firebase Messaging Sender ID"
+VITE_APP_ID="Your Firebase App ID"
+VITE_MEASUREMENT_ID="Your Firebase Measurement ID"
+```
+## Firebase Configuration
+
+In addition to setting up the environment variables, you also need to configure Firebase for the Android platform:
+
+1. Follow the instructions in the [Firebase Android setup documentation](https://firebase.google.com/docs/android/setup?hl=fr).
+2. Download the `google-services.json` file and place it in the `android/app` directory of your project.
+
+Please note that the `google-services.json` file contains sensitive information and should not be included in your Git repository. Make sure it is added to your `.gitignore` file.
+
 ## Usage
 1. Launch the app
    - For Web: `ionic serve`
