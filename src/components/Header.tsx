@@ -42,7 +42,7 @@ const [showPopover, setShowPopover] = useState<{
   return (
     <IonToolbar
       color={"black"}
-      className="flex justify-between items-center relative"
+      className="bg-[#121212] flex justify-between items-center relative"
     >
       {authenticatedUser && (
         <IonButtons slot="start" className="flex items-center">
@@ -60,7 +60,7 @@ const [showPopover, setShowPopover] = useState<{
       {authenticatedUser && (
         <IonButtons slot="end" className="flex items-center">
           <IonButton fill="clear" routerLink="/tchat" routerDirection="forward">
-            <FAIcons.FaComment size={25} className="text-white" />
+            <FAIcons.FaCommentDots size={25} className="text-white" />
             {pendingFriendRequests > 0 && (
               <IonBadge color={"danger"}>{pendingFriendRequests}</IonBadge>
             )}

@@ -116,10 +116,10 @@ const FriendsPage: React.FC = () => {
   return (
     <IonPage>
       <IonHeader>
-        <IonToolbar>
+        <IonToolbar >
           <IonButtons slot="end">
             <IonButton routerLink="/home">
-              <FA6Icons.FaArrowRightLong size={25} />
+              <FA6Icons.FaArrowRightLong size={25} color="white" />
             </IonButton>
           </IonButtons>
         </IonToolbar>
@@ -227,7 +227,7 @@ const FriendsPage: React.FC = () => {
           </IonList>
         )}
       </IonContent>
-      <IonFooter className="flex w-[95%] bottom-4 justify-center items-center mx-auto">
+      <IonFooter className="flex bg-[#121212] bottom-4 justify-center items-center mx-auto">
         <IonSegment
           className="flex justify-around w-full"
           onIonChange={handleSegmentChange}
