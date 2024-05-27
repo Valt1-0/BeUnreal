@@ -15,7 +15,6 @@ import { MobXProviderContext, observer } from "mobx-react";
 
 import * as FAIcons from "react-icons/fa";
 
-import SwiperCore from "swiper";
 import { Swiper, SwiperSlide } from "swiper/react";
 import "swiper/css";
 import { isPlatform } from "@ionic/react";
@@ -29,7 +28,7 @@ const Home = () => {
   const { store } = React.useContext(MobXProviderContext);
   const [myBeUnreal, setMyBeUnreal] = useState<any>([]);
   const [followerBeUnReal, setFollowerBeUnReal] = useState<any>([]);
-  const [isOpen, setIsOpen] = useState(false);
+  const [discoveredBeUnReal, setDiscoveredBeUnReal] = useState<any>([]);
 
   const showToast = async (msg: string) => {
     await Toast.show({
@@ -58,9 +57,7 @@ const Home = () => {
       setFollowerBeUnReal(b);
       console.log(b);
     });
-  }, []);
 
-  useEffect(() => {
     const getNearbyNonFollowedunBeReal = async () => {
       let coordinates = { coords: { latitude: 0, longitude: 0 } };
       if (isPlatform("hybrid")) {
@@ -71,42 +68,14 @@ const Home = () => {
           latitude: coordinates.coords.latitude,
           longitude: coordinates.coords.longitude,
         })
-        .then((r: any) => {
-          console.log(r);
+        .then((b: any) => {
+          setDiscoveredBeUnReal(b);
+          console.log(b);
         });
     };
     checkLocationPermissions();
     getNearbyNonFollowedunBeReal();
   }, []);
-
-  const cardData = [
-    {
-      title: "Card 1",
-      subtitle: "Subtitle 1",
-      text: "Some text for card 1",
-    },
-    {
-      title: "Card 2",
-      subtitle: "Subtitle 2",
-      text: "Some text for card 2",
-    },
-    {
-      title: "Card 3",
-      subtitle: "Subtitle 3",
-      text: "Some text for card 3",
-    },
-    {
-      title: "Card 3",
-      subtitle: "Subtitle 3",
-      text: "Some text for card 3",
-    },
-    {
-      title: "Card 3",
-      subtitle: "Subtitle 3",
-      text: "Some text for card 3",
-    },
-    // Add more card data here
-  ];
 
   return (
     <IonPage>
@@ -132,7 +101,7 @@ const Home = () => {
                       src={card.url}
                       style={{ width: "100%", height: "auto" }}
                     />
-                    <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 p-1 flex justify-center items-center text-black bg-white bg-opacity-70 rounded-md shadow-lg">
+                    <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 p-1 flex justify-center items-center text-black bg-white bg-opacity-80 rounded-md shadow-lg">
                       <FAIcons.FaCalendarAlt className="mr-2" />
                       <Tooltip id={`tooltip-${index}`} place="top">
                         <p className="text-x font-eloquiabold">{date}</p>
@@ -180,7 +149,7 @@ const Home = () => {
                           src={lastBeUnreal.url}
                           style={{ width: "100%", height: "auto" }}
                         />
-                        <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 p-1 flex justify-center items-center text-black bg-white bg-opacity-70 rounded-md shadow-lg">
+                        <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 p-1 flex justify-center items-center text-black bg-white bg-opacity-80 rounded-md shadow-lg">
                           <p className="text-2x font-eloquiabold">
                             {lastBeUnreal.user.username}
                           </p>
@@ -195,7 +164,7 @@ const Home = () => {
         </div>
         <div className="mt-4">
           <IonText className="font-eloquiabold text-lg m-3">
-            Découvertes
+            Découvertes dans votre entourage
           </IonText>
           <div className="scroll-container">
             <Swiper
@@ -205,15 +174,17 @@ const Home = () => {
                 clickable: true,
               }}
             >
-              {cardData.map((card, index) => (
+              {discoveredBeUnReal.map((card: any, index: number) => (
                 <SwiperSlide key={index}>
                   <IonCard>
                     <IonImg
-                      src="https://placehold.co/1440x2560"
+                      src={card.url}
                       style={{ width: "100%", height: "auto" }}
                     />
-                    <div className="absolute bottom-0 left-2 p-2 text-black bg-white rounded-md">
-                      <p className="text-sm">{card.title}</p>
+                    <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 p-1 flex justify-center items-center text-black bg-white bg-opacity-80 rounded-md shadow-lg">
+                      <p className="text-2x font-eloquiabold">
+                        {card.username}
+                      </p>
                     </div>
                   </IonCard>
                 </SwiperSlide>

@@ -1,4 +1,3 @@
-
 import { initializeApp } from "firebase/app";
 import {
   getAuth,
@@ -49,11 +48,11 @@ interface AddObjectParams {
   collectionName: string;
   objectData: any;
 }
-  interface UserInfo {
-    username: string;
-    email: string;
-    password: string;
-  }
+interface UserInfo {
+  username: string;
+  email: string;
+  password: string;
+}
 interface QueryParams {
   collectionName: string;
 }

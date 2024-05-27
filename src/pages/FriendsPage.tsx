@@ -116,7 +116,7 @@ const FriendsPage: React.FC = () => {
   return (
     <IonPage>
       <IonHeader>
-        <IonToolbar >
+        <IonToolbar>
           <IonButtons slot="end">
             <IonButton routerLink="/home">
               <FA6Icons.FaArrowRightLong size={25} color="white" />
