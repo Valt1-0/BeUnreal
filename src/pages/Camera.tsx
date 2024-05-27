@@ -3,9 +3,17 @@ import {
   CameraPreview,
   CameraPreviewOptions,
 } from "@capacitor-community/camera-preview";
-import { IonButton, IonContent, IonIcon, IonPage } from "@ionic/react";
+import {
+  IonButton,
+  IonButtons,
+  IonContent,
+  IonHeader,
+  IonIcon,
+  IonPage,
+  IonToolbar,
+} from "@ionic/react";
 import { MobXProviderContext } from "mobx-react";
-import * as FAIcons from "react-icons/fa";
+import * as FA6Icons from "react-icons/fa6";
 import {
   PushNotificationSchema,
   PushNotifications,
@@ -140,6 +148,9 @@ const Camera: React.FC = () => {
   return (
     <IonPage>
       <IonContent fullscreen={true} className="w-full h-full">
+        <IonButton fill="clear" routerLink="/home" className="absolute top-4 left-4 z-50">
+          <FA6Icons.FaArrowLeftLong size={25} color="white"/>
+        </IonButton>
         {imageData ? (
           <div className="w-full h-full">
             <button
