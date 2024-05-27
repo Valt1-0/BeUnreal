@@ -12,8 +12,11 @@ import { useHistory } from "react-router-dom";
 
 const Profile: React.FC = () => {
   const { store } = React.useContext(MobXProviderContext);
+  const {activeUser} = store;
 
-  const [username, setUsername] = useState(store.activeUser.username);
+
+
+  const [username, setUsername] = useState(activeUser.username);
   const [email] = useState(store.activeUser.email); // Email is not editable
 
   const history = useHistory();
