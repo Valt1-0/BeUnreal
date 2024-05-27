@@ -12,11 +12,13 @@ import {
   IonIcon,
   IonInput,
   InputChangeEventDetail,
+  IonBackButton,
+  IonButtons,
 } from "@ionic/react";
 import { closeCircle } from "ionicons/icons";
 import "tailwindcss/tailwind.css";
 import { MobXProviderContext,observer } from "mobx-react";
-import Tchat from "./Tchat";
+import Tchat from "../components/Tchat";
 
 const CreateTchatPage: React.FC = () => {
     const {store} = React.useContext(MobXProviderContext);
@@ -43,24 +45,36 @@ useEffect(() => {
         setChatId(chatId);
     }
     fetchChatId();
+      setInputValue("");
     // Add your code here
 }, [selectedFriends]);
 
-  const handleItemClick = (friend: { username: string; uid: string }) => {
+const handleItemClick = (friend: { username: string; uid: string }) => {
+  setSelectedFriends((prevSelectedFriends) => {
+    const friendIndex = prevSelectedFriends.findIndex(
+      (prevFriend) => prevFriend.uid === friend.uid
+    );
 
-    setSelectedFriends((prevSelectedFriends) => [
-      ...prevSelectedFriends,
-      friend,
-    ]);
-    setHighlightedFriend(null);
+    if (friendIndex !== -1) {
+      // L'ami est déjà dans la liste, le supprimer
+      return prevSelectedFriends.filter(
+        (prevFriend) => prevFriend.uid !== friend.uid
+      );
+    } else {
+      // L'ami n'est pas dans la liste, l'ajouter
+      return [...prevSelectedFriends, friend];
+    }
+  });
 
-  };
+  setHighlightedFriend(null);
+};
 
   const handleDelete = (friendToDelete: { username: string; uid: string }) => {
     setSelectedFriends((prevSelectedFriends) =>
       prevSelectedFriends.filter((friend) => friend.uid !== friendToDelete.uid)
     );
     setHighlightedFriend(null);
+    
   };
 
 const handleInput = (e: CustomEvent<InputChangeEventDetail>) => {
@@ -84,14 +98,17 @@ const handleKeyDown = (e: React.KeyboardEvent) => {
     <IonPage>
       <IonHeader>
         <IonToolbar>
-          <IonTitle>Créer un chat</IonTitle>
+          <IonButtons  slot="start"  > 
+          <IonBackButton className="text-white"  defaultHref="/tchat"/>
+          </IonButtons>
+          <IonTitle>Nouvelle conversation</IonTitle>
         </IonToolbar>
       </IonHeader>
       <IonContent fullscreen={false}>
-        <div className="max-h-full h-full w-full grid grid-rows-1  ">
-          <div className="flex absolute  w-full items-center justify-center h-10">
-            <div className="absolute items-center justify-center z-10 ">
-              <div className="flex items-center w-full">
+        <div className="h-full w-full flex flex-col">
+          <div className="relative w-full items-center justify-center  max-h-52 grow-0">
+            <div className="w-full items-center justify-center z-10 flex flex-col ">
+              <div className="flex flex-wrap items-center justify-center z-10 ">
                 <IonLabel className="whitespace-nowrap">à :</IonLabel>
                 {selectedFriends.map((friend, index) => (
                   <IonChip
@@ -117,9 +134,9 @@ const handleKeyDown = (e: React.KeyboardEvent) => {
                   className="flex-shrink flex-basis-0 w-auto"
                 />
               </div>
-              <div>
+              <div className="justify-center items-center  w-56 z-10  ">
                 {(inputValue !== "" || chatId === null) && (
-                  <IonList className="absolute w-full z-10">
+                  <IonList className="absolute w-56">
                     {followingUsers.map(
                       (
                         friend: { username: any; uid: string },
@@ -147,7 +164,7 @@ const handleKeyDown = (e: React.KeyboardEvent) => {
               </div>
             </div>
           </div>
-          <div className="h-full w-full max-h-full flex">
+          <div className=" relative grow  ">
             {chatId && (
               <Tchat
                 id={chatId}

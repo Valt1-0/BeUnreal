@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   IonContent,
   IonPage,
@@ -23,7 +23,6 @@ interface TchatProps {
     imageFile: File | null
   ) => Promise<void>;
 }
-
 const Tchat: React.FC<TchatProps> = ({
   id,
   authenticatedUser,
@@ -34,32 +33,45 @@ const Tchat: React.FC<TchatProps> = ({
   interface MessageWithUsername extends Message {
     username?: string;
   }
+  const endOfMessagesRef = useRef<HTMLDivElement | null>(null);
   const [bottom, setBottom] = useState(0);
-  // const { id } = useParams<{ id: string }>();
   const [message, setMessage] = useState("");
-  // const { store } = React.useContext(MobXProviderContext);
-  //const { authenticatedUser, tchatMessages } = store;
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const fileInput = React.useRef<HTMLInputElement>(null);
 
   console.log("tchatMesasge ", tchatMessages);
 
+
 useEffect(() => {
+  scrollToBottom();
+},[bottom]);
 
-  const handleShow = (info: any) => {
-      console.log(info.keyboardHeight);
-    setBottom(info.keyboardHeight)};
-  const handleHide = () => setBottom(0);
+// useEffect(() => {
+//   const handleShow = (info: any) => {
+//     setBottom(info.keyboardHeight);
+//     setTimeout(scrollToBottom, 300); // Ajoutez un délai
+//   };
+//   const handleHide = () => {
+//     setBottom(0);
+//     setTimeout(scrollToBottom, 300); // Ajoutez un délai
+//   };
 
-  Keyboard.addListener("keyboardWillShow", handleShow);
-  Keyboard.addListener("keyboardWillHide", handleHide);
+//   Keyboard.addListener("keyboardDidShow", handleShow);
+//   Keyboard.addListener("keyboardDidHide", handleHide);
 
-  return () => {
-    Keyboard.removeAllListeners();
+//   return () => {
+//     Keyboard.removeAllListeners();
+//   };
+// }, []);
+  const scrollToBottom = () => {
+    endOfMessagesRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
-}, []);
+  useEffect(() => {
+    scrollToBottom();
+  }, [tchatMessages]);
+
   useEffect(() => {
     const fetchTchatMessage = async () => {
       await getTchatMessages(id, authenticatedUser.uid);
@@ -117,8 +129,8 @@ useEffect(() => {
   };
 
   return (
-    <div className="flex flex-col flex-grow h-full">
-      <div className="relative overflow-y-scroll">
+    <div className="absolute flex flex-col h-full w-full">
+      <div className="flex flex-col overflow-y-scroll  grow-0">
         {tchatMessages &&
           sortMessagesByTimestamp(tchatMessages).map(
             (msg: MessageWithUsername, index: number) => (
@@ -127,6 +139,9 @@ useEffect(() => {
                 className={`flex flex-col items-${
                   msg.senderId === authenticatedUser.uid ? "end" : "start"
                 }`}
+                ref={
+                  index === tchatMessages.length - 1 ? endOfMessagesRef : null
+                }
               >
                 <div
                   className={`chat ${
@@ -171,7 +186,7 @@ useEffect(() => {
           )}
       </div>
       <div
-        className="relative flex max-h-28 w-full bg-red-900 "
+        className="relative flex max-h-28 w-full bg-black "
         style={{ bottom: `${bottom}px` }}
         id="form"
       >
