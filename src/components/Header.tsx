@@ -53,13 +53,19 @@ const Header = () => {
               <IonBadge color={"danger"}>{pendingFriendRequests}</IonBadge>
             )}
           </IonButton>
-          <div className="w-10 h-10 rounded-full flex justify-center items-center ml-2">
-            <img
-              className="rounded-full"
-              src={`https://robohash.org/${authenticatedUser?.username}.png`}
-              alt="avatar"
-            />
-          </div>
+          <IonButton
+            fill="clear"
+            routerLink="/profile"
+            routerDirection="forward"
+          >
+            <div className="w-10 h-10 rounded-full flex justify-center items-center ml-2">
+              <img
+                className="rounded-full"
+                src={`https://robohash.org/${authenticatedUser?.username}.png`}
+                alt="avatar"
+              />
+            </div>
+          </IonButton>
         </IonButtons>
       )}
     </IonToolbar>

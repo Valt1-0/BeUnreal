@@ -13,6 +13,9 @@ import LoginPage from "./pages/LoginPage";
 import HomeTchatPage from "./pages/HomeTchatPage";
 import FriendsPage from "./pages/FriendsPage";
 import Camera from "./pages/Camera";
+import CreateTchatPage from "./pages/CreateTchatPage";
+import TchatPage from "./pages/TchatPage";
+import Profile from "./pages/Profile";
 
 import { observer, MobXProviderContext } from "mobx-react";
 
@@ -28,9 +31,6 @@ import "@ionic/react/css/palettes/dark.always.css";
 
 /* Theme variables */
 import "./theme/variables.css";
-
-import CreateTchatPage from "./pages/CreateTchatPage";
-import TchatPage from "./pages/TchatPage";
 
 setupIonicReact();
 
@@ -61,6 +61,7 @@ const PublicRoutes: React.FC = () => {
         <Route path="/tchat/:id" component={TchatPage} exact={true} />
         <Route path={"/friends"} component={FriendsPage} exact={true} />
         <Route path={"/camera"} component={Camera} exact={true} />
+        <Route path={"/profile"} component={Profile} exact={true} />
         <Redirect to="/home" />
       </IonRouterOutlet>
     </IonReactRouter>
