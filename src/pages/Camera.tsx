@@ -3,7 +3,7 @@ import {
   CameraPreview,
   CameraPreviewOptions,
 } from "@capacitor-community/camera-preview";
-import { IonButton, IonContent, IonIcon, IonPage } from "@ionic/react";
+import { IonBackButton, IonButton, IonContent, IonIcon, IonPage } from "@ionic/react";
 import { MobXProviderContext } from "mobx-react";
 import * as FA6Icons from "react-icons/fa6";
 import {
@@ -38,15 +38,6 @@ const Camera: React.FC = () => {
 
   const nullEntry: any[] = [];
   const [notifications, setnotifications] = useState(nullEntry);
-
-  useEffect(() => {
-    if (isPlatform("hybrid")) {
-      registerNotifications();
-      addListeners();
-
-      checkLocationPermissions();
-    }
-  }, []);
 
   const addListeners = async () => {
     await PushNotifications.addListener("registration", (token) => {
@@ -116,6 +107,13 @@ const Camera: React.FC = () => {
   };
 
   useEffect(() => {
+    if (isPlatform("hybrid")) {
+      registerNotifications();
+      addListeners();
+
+      checkLocationPermissions();
+    }
+
     CameraPreview.start(cameraPreviewOptions).then(() => {
       setIsCameraRunning(true);
       const bodyElement = document.querySelector("body");
@@ -131,9 +129,9 @@ const Camera: React.FC = () => {
       CameraPreview.stop().then(() => {
         setIsCameraRunning(false);
         const bodyElement = document.querySelector("body");
-        if (bodyElement) {
-          bodyElement.classList.remove("camera-active");
-        }
+        console.log(bodyElement);
+        bodyElement?.classList.remove("camera-active");
+
         StatusBar.setOverlaysWebView({ overlay: false });
       });
     };
@@ -142,13 +140,12 @@ const Camera: React.FC = () => {
   return (
     <IonPage>
       <IonContent fullscreen={true} className="w-full h-full">
-        <IonButton
-          fill="clear"
-          routerLink="/home"
+        <IonBackButton 
+          defaultHref="/home"
           className="absolute top-4 left-4 z-50"
         >
           <FA6Icons.FaArrowLeftLong size={25} color="white" />
-        </IonButton>
+        </IonBackButton>
         {imageData ? (
           <div className="w-full h-full">
             <button
