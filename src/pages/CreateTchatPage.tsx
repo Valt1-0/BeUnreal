@@ -16,10 +16,11 @@ import {
 import { closeCircle } from "ionicons/icons";
 import "tailwindcss/tailwind.css";
 import { MobXProviderContext,observer } from "mobx-react";
+import Tchat from "./Tchat";
 
 const CreateTchatPage: React.FC = () => {
     const {store} = React.useContext(MobXProviderContext);
-    const { followingUsers } = store;
+    const { followingUsers, authenticatedUser, tchatMessages } = store;
   const [selectedFriends, setSelectedFriends] = useState<
     Array<{ username: string; uid: string }>
   >([]);
@@ -86,56 +87,79 @@ const handleKeyDown = (e: React.KeyboardEvent) => {
           <IonTitle>Créer un chat</IonTitle>
         </IonToolbar>
       </IonHeader>
-      <IonContent fullscreen className="ion-padding">
-        <div className="flex flex-wrap items-center">
-          <IonLabel className="whitespace-nowrap">à :</IonLabel>
-          {selectedFriends.map((friend, index) => (
-            <IonChip
-              key={index}
-              color={
-                highlightedFriend && highlightedFriend.uid === friend.uid
-                  ? "primary"
-                  : undefined
-              }
-            >
-              <IonLabel>{friend.username}</IonLabel>
-              <IonIcon
-                icon={closeCircle}
-                onClick={() => handleDelete(friend)}
+      <IonContent fullscreen={false}>
+        <div className="max-h-full h-full flex">
+          <div className="absolute  w-full items-center justify-center ">
+            <div >
+              <div className="flex items-center w-full">
+                <IonLabel className="whitespace-nowrap">à :</IonLabel>
+                {selectedFriends.map((friend, index) => (
+                  <IonChip
+                    key={index}
+                    color={
+                      highlightedFriend && highlightedFriend.uid === friend.uid
+                        ? "primary"
+                        : undefined
+                    }
+                  >
+                    <IonLabel>{friend.username}</IonLabel>
+                    <IonIcon
+                      icon={closeCircle}
+                      onClick={() => handleDelete(friend)}
+                    />
+                  </IonChip>
+                ))}
+                <IonInput
+                  value={inputValue}
+                  onIonInput={handleInput}
+                  placeholder=" Rechercher"
+                  onKeyDown={handleKeyDown}
+                  className="flex-shrink flex-basis-0 w-auto"
+                />
+              </div>
+              <div>
+                {(inputValue !== "" || chatId === null) && (
+                  <IonList className="absolute w-full z-10">
+                    {followingUsers.map(
+                      (
+                        friend: { username: any; uid: string },
+                        index: React.Key | null | undefined
+                      ) => (
+                        <IonItem
+                          color={
+                            selectedFriends.some(
+                              (friendItem) =>
+                                friendItem.username === friend.username
+                            )
+                              ? "primary"
+                              : undefined
+                          }
+                          aria-hidden="true"
+                          key={index}
+                          onClick={() => handleItemClick(friend)}
+                        >
+                          <IonLabel>{friend.username}</IonLabel>
+                        </IonItem>
+                      )
+                    )}
+                  </IonList>
+                )}
+              </div>
+            </div>
+          </div>
+
+          <div>
+            {chatId && (
+              <Tchat
+                id={chatId}
+                authenticatedUser={authenticatedUser}
+                tchatMessages={tchatMessages}
+                getTchatMessages={store.getTchatMessages}
+                doSendMessage={store.doSendMessage}
               />
-            </IonChip>
-          ))}
-          <IonInput
-            value={inputValue}
-            onIonInput={handleInput}
-            placeholder=" Rechercher"
-            onKeyDown={handleKeyDown}
-            className="flex-shrink flex-basis-0 w-auto"
-          />
+            )}
+          </div>
         </div>
-        <IonList>
-          {followingUsers.map(
-            (
-              friend: { username: any; uid: string },
-              index: React.Key | null | undefined
-            ) => (
-              <IonItem
-                color={
-                  selectedFriends.some(
-                    (friendItem) => friendItem.username === friend.username
-                  )
-                    ? "primary"
-                    : undefined
-                }
-                aria-hidden="true"
-                key={index}
-                onClick={() => handleItemClick(friend)}
-              >
-                <IonLabel>{friend.username}</IonLabel>
-              </IonItem>
-            )
-          )}
-        </IonList>
       </IonContent>
     </IonPage>
   );

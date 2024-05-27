@@ -96,20 +96,30 @@ export const getFollowBeUnReal = async (userId: string) => {
     const following = followingSnapshot.docs.map((doc) => doc.id);
 
     // Récupérer les BeReal de chaque personne suivie
-    const friendsBeRealPromises = following.map((friendId: string) => {
+    const friendsBeRealPromises = following.map(async (friendId: string) => {
       const q = query(
         collection(db, "BeReal"),
         where("uid", "==", friendId),
         orderBy("timestamp", "desc")
       );
-      return getDocs(q);
+      const beRealDocs = await getDocs(q);
+
+      // Récupérer les informations de l'utilisateur
+      const userDoc = await getDoc(doc(db, "users", friendId));
+      const userData = userDoc.data();
+
+      // Ajouter les informations de l'utilisateur aux données BeReal
+      return beRealDocs.docs.map((doc) => ({
+        ...doc.data(),
+        user: userData,
+      }));
     });
 
     const friendsBeRealSnapshots = await Promise.all(friendsBeRealPromises);
 
     // Convertir les snapshots en données
     const friendsBeReal = friendsBeRealSnapshots.map((snapshot) => {
-      return snapshot.docs.map((doc) => doc.data());
+      return snapshot;
     });
 
     return friendsBeReal;

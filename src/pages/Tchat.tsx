@@ -1,25 +1,68 @@
 import React, { useState, useEffect } from "react";
-import { IonContent, IonPage, IonButton, IonToolbar } from "@ionic/react";
+import {
+  IonContent,
+  IonPage,
+  IonButton,
+  IonToolbar,
+  IonInput,
+  IonTextarea,
+} from "@ionic/react";
 import { MobXProviderContext, observer } from "mobx-react";
 import { useParams } from "react-router-dom";
 import { Message } from "../store/Firebase";
 import { serverTimestamp } from "firebase/firestore";
+import { Keyboard } from "@capacitor/keyboard";
+interface TchatProps {
+  id: string;
+  authenticatedUser: any;
+  tchatMessages: Message[];
+  getTchatMessages: (id: string, uid: string) => Promise<void>;
+  doSendMessage: (
+    id: string,
+    message: Message,
+    imageFile: File | null
+  ) => Promise<void>;
+}
 
-const Tchat: React.FC = () => {
+const Tchat: React.FC<TchatProps> = ({
+  id,
+  authenticatedUser,
+  tchatMessages,
+  getTchatMessages,
+  doSendMessage,
+}) => {
   interface MessageWithUsername extends Message {
     username?: string;
   }
-  const { id } = useParams<{ id: string }>();
+  const [bottom, setBottom] = useState(0);
+  // const { id } = useParams<{ id: string }>();
   const [message, setMessage] = useState("");
-  const { store } = React.useContext(MobXProviderContext);
-  const { authenticatedUser, tchatMessages } = store;
+  // const { store } = React.useContext(MobXProviderContext);
+  //const { authenticatedUser, tchatMessages } = store;
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const fileInput = React.useRef<HTMLInputElement>(null);
 
+  console.log("tchatMesasge ", tchatMessages);
+
+useEffect(() => {
+
+  const handleShow = (info: any) => {
+      console.log(info.keyboardHeight);
+    setBottom(info.keyboardHeight)};
+  const handleHide = () => setBottom(0);
+
+  Keyboard.addListener("keyboardWillShow", handleShow);
+  Keyboard.addListener("keyboardWillHide", handleHide);
+
+  return () => {
+    Keyboard.removeAllListeners();
+  };
+
+}, []);
   useEffect(() => {
     const fetchTchatMessage = async () => {
-      await store.getTchatMessages(id, authenticatedUser.uid);
+      await getTchatMessages(id, authenticatedUser.uid);
     };
     fetchTchatMessage();
   }, []);
@@ -62,7 +105,7 @@ const Tchat: React.FC = () => {
     };
 
     try {
-      await store.doSendMessage(id, newMessage, imageFile);
+      await doSendMessage(id, newMessage, imageFile);
       setMessage("");
       setImageFile(null);
       if (fileInput.current) {
@@ -74,96 +117,90 @@ const Tchat: React.FC = () => {
   };
 
   return (
-    <IonPage>
-      <IonContent>
-        <div className="h-full flex flex-col justify-center items-center">
-          <div className="w-screen overflow-y-scroll">
-            {sortMessagesByTimestamp(tchatMessages).map(
-              (msg: MessageWithUsername, index: number) => (
+    <div className="h-full w-full flex flex-col">
+      <div className=" flex-grow overflow-y-scroll">
+        {tchatMessages &&
+          sortMessagesByTimestamp(tchatMessages).map(
+            (msg: MessageWithUsername, index: number) => (
+              <div
+                key={index}
+                className={`flex flex-col items-${
+                  msg.senderId === authenticatedUser.uid ? "end" : "start"
+                }`}
+              >
                 <div
-                  key={index}
-                  className={`flex flex-col items-${
-                    msg.senderId === authenticatedUser.uid ? "end" : "start"
+                  className={`chat ${
+                    msg.senderId === authenticatedUser.uid
+                      ? "chat-end"
+                      : "chat-start"
                   }`}
                 >
-                  <div
-                    className={`chat ${
-                      msg.senderId === authenticatedUser.uid
-                        ? "chat-end"
-                        : "chat-start"
-                    }`}
-                  >
-                    <div className="chat-image avatar">
-                      <div className="w-10 rounded-full">
-                        <img
-                          alt="Tailwind CSS chat bubble component"
-                          src="https://img.daisyui.com/images/stock/photo-1534528741775-53994a69daeb.jpg"
-                        />
-                      </div>
-                    </div>
-                    <div className="chat-header">
-                      {msg.senderId === authenticatedUser.uid
-                        ? "You"
-                        : msg?.username}
-                    </div>
-                    {msg.type === "image" ? (
-                      <div className="chat-bubble">
-                        <img
-                          src={msg.content}
-                          alt="Message content"
-                          className="w-64 h-64 object-contain cursor-pointer"
-                          onClick={() => handleImageClick(msg.content)}
-                        />
-                      </div>
-                    ) : (
-                      <div className="chat-bubble">{msg.content}</div>
-                    )}
-                    <div className="chat-footer">
-                      <time className="text-xs opacity-50">
-                        {formatTimestamp(msg.timestamp)}
-                      </time>
+                  <div className="chat-image avatar">
+                    <div className="w-10 rounded-full">
+                      <img
+                        alt="Tailwind CSS chat bubble component"
+                        src="https://img.daisyui.com/images/stock/photo-1534528741775-53994a69daeb.jpg"
+                      />
                     </div>
                   </div>
+                  <div className="chat-header">
+                    {msg.senderId === authenticatedUser.uid
+                      ? "You"
+                      : msg?.username}
+                  </div>
+                  {msg.type === "image" ? (
+                    <div className="chat-bubble">
+                      <img
+                        src={msg.content}
+                        alt="Message content"
+                        className="w-64 h-64 object-contain cursor-pointer"
+                        onClick={() => handleImageClick(msg.content)}
+                      />
+                    </div>
+                  ) : (
+                    <div className="chat-bubble">{msg.content}</div>
+                  )}
+                  <div className="chat-footer">
+                    <time className="text-xs opacity-50">
+                      {formatTimestamp(msg.timestamp)}
+                    </time>
+                  </div>
                 </div>
-              )
-            )}
-          </div>
-          <div className="flex items-center py-20" id="form">
-            <input
-              type="file"
-              accept="image/*"
-              onChange={handleFileChange}
-              ref={fileInput}
-            />
-            <input
-              placeholder="Enter Message"
-              className="mx-4 text-white border-2 border-white font-eloquiabold p-2 rounded-lg"
-              value={message}
-              onChange={(e) => setMessage(e.target.value)}
-            />
-            <IonButton onClick={sendMessage}>Send</IonButton>
-          </div>
-        </div>
-        {selectedImage && (
-          <div className="fixed inset-0 flex items-center justify-center z-50">
-            <div className="fixed inset-0 bg-black opacity-100"></div>
-            <div className="bg-white p-4 rounded-lg relative max-w-full max-h-full">
-              <img
-                src={selectedImage}
-                alt="Selected content"
-                className="max-w-full h-auto object-contain"
-              />
-              <IonButton
-                className="text-white absolute top-0 left-0 m-2"
-                onClick={handleCloseModal}
-              >
-                Close
-              </IonButton>
-            </div>
-          </div>
-        )}
-      </IonContent>
-    </IonPage>
+              </div>
+            )
+          )}
+      </div>
+      <div
+        className=" relative flex min-h-28  w-full bg-red-900 "
+        style={{ bottom: `${bottom}px` }}
+        id="form"
+      >
+        <input
+          type="file"
+          accept="image/*"
+          onChange={handleFileChange}
+          ref={fileInput}
+        />
+        <IonTextarea
+          rows={1}
+          autoGrow={true}
+          fill="solid"
+          placeholder="Aa"
+          className="mx-4 text-white border-2 border-white font-eloquiabold p-2 rounded-lg"
+          value={message}
+          onIonInput={(e) => setMessage(e.detail.value!)}
+        ></IonTextarea>
+        {/* <input
+            placeholder="Aa"
+            className="mx-4 text-white border-2 border-white font-eloquiabold p-2 rounded-lg"
+            value={message}
+            onChange={(e) => setMessage(e.target.value)}
+          /> */}
+        <IonButton className="h-10" onClick={sendMessage}>
+          Send
+        </IonButton>
+      </div>
+    </div>
   );
 };
 

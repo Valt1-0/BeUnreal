@@ -43,7 +43,7 @@ export class Store {
       authenticatedUser: computed,
       // doCheckAuth: computed,
       getTchatMessages: action,
-      getTchatIdByParticipants : action,
+      getTchatIdByParticipants: action,
       getTchats: action,
       getUsers: action,
       doCreateUser: action,
@@ -108,14 +108,14 @@ export class Store {
   //   }
   // }
 
-  getTchatMessages(_chatId: string, _userID: string) {
+  getTchatMessages = (_chatId: string, _userID: string) => {
     return firebaseService.getMessages(_chatId, _userID, (messages: any[]) => {
       console.log(messages);
       runInAction(() => {
         this.tchatMessages = messages;
       });
     });
-  }
+  };
   get authenticatedUser() {
     return this.activeUser || null;
   }
@@ -427,8 +427,7 @@ export class Store {
     }
   }
 
-  async doGetBeReal(_userId?:string)
-  {
+  async doGetBeReal(_userId?: string) {
     try {
       const userId = _userId || this.activeUser.uid;
       return await firebaseService.getBeReal(userId);
@@ -440,14 +439,11 @@ export class Store {
 
   async doGetFollowBeUnReal() {
     try {
-    const beUnReal = firebaseService.getFollowBeUnReal(this.activeUser.uid)
-    return beUnReal;
-    }
-    catch(err) {
+      const beUnReal = firebaseService.getFollowBeUnReal(this.activeUser.uid);
+      return beUnReal;
+    } catch (err) {
       console.error("Error to get be real: ", err);
       return null;
     }
   }
-
-
 }

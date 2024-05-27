@@ -61,7 +61,7 @@ const PublicRoutes: React.FC = () => {
       <IonRouterOutlet>
         <Route path="/home" component={Home} />
         <Route path="/tchat" component={TchatPage} exact={true} />
-        <Route path="/tchat/create/test" component={CreateTchatPage} exact={true} />
+        <Route path="/tchat/create/new" component={CreateTchatPage} exact={true} />
         <Route path="/tchat/:id" component={Tchat} exact={true} />
         <Route path={"/friends"} component={FriendsPage} exact={true} />
         <Route path={"/camera"} component={Camera} exact={true} />
