@@ -8,6 +8,7 @@ import {
   signOut,
   User,
   updateCurrentUser,
+  signInWithCredential,
 } from "firebase/auth";
 import {
   getFirestore,
@@ -41,7 +42,7 @@ import {
   uploadString,
   FirebaseStorage,
 } from "firebase/storage";
-import { Auth } from "firebase/auth";
+import { Auth,EmailAuthProvider } from "firebase/auth";
 import config from "./../config";
 
 interface AddObjectParams {
@@ -175,10 +176,26 @@ export class UserService {
     // Supprimer l'utilisateur de Firebase Authentication
     const user = this.auth.currentUser;
     if (user && user.uid === userId) {
-      await user.delete();
+      // Demander à l'utilisateur de se reconnecter
+      const credential = await this.reauthenticateUser();
+      if (credential) {
+        await signInWithCredential(this.auth, credential);
+        await user.delete();
+      }
     }
 
     console.log("User deleted");
+  };
+
+  reauthenticateUser = async () => {
+    // Demander à l'utilisateur de fournir à nouveau ses identifiants
+    const password = prompt("Please enter your password") || ""; // Provide a default value for password if the user cancels the prompt
+    const user = this.auth.currentUser;
+    if (user && user.email) { // Check if user.email is not null
+      const credential = EmailAuthProvider.credential(user.email, password);
+      return credential;
+    }
+    return null;
   };
 
   getUserProfile = () => {
