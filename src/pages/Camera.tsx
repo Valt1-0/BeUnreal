@@ -17,7 +17,7 @@ import { Geolocation } from "@capacitor/geolocation";
 import { Toast } from "@capacitor/toast";
 import { isPlatform } from "@ionic/react";
 import { StatusBar } from "@capacitor/status-bar";
-import "./home.css";
+import "./camera.css";
 import { sendSharp } from "ionicons/icons";
 const Camera: React.FC = () => {
   const { store } = React.useContext(MobXProviderContext);
