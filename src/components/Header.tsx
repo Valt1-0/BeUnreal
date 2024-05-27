@@ -3,6 +3,10 @@ import {
   IonBadge,
   IonButton,
   IonButtons,
+  IonItem,
+  IonLabel,
+  IonList,
+  IonPopover,
   IonTitle,
   IonToolbar,
 } from "@ionic/react";
@@ -14,6 +18,14 @@ const Header = () => {
   const { store } = useContext(MobXProviderContext);
   let { authenticatedUser } = store;
   const [pendingFriendRequests, setPendingFriendRequests] = useState(0);
+const [showPopover, setShowPopover] = useState<{
+  open: boolean;
+  event: React.MouseEvent<HTMLImageElement, MouseEvent> | undefined;
+}>({
+  open: false,
+  event: undefined,
+});
+
 
   useEffect(() => {
     store.doGetPendingFriendRequestsRealtime();
@@ -58,7 +70,27 @@ const Header = () => {
               className="rounded-full"
               src={`https://robohash.org/${authenticatedUser?.username}.png`}
               alt="avatar"
+              onClick={(e) => {
+                e.persist();
+                setShowPopover({ open: true, event: e });
+              }}
             />
+            <IonPopover
+              isOpen={showPopover.open}
+              event={showPopover.event}
+              onDidDismiss={() =>
+                setShowPopover({ open: false, event: undefined })
+              }
+            >
+              <IonList>
+                <IonItem detail={true} button onClick={() => console.log("Profil clicked")}>
+                  <IonLabel>Profil</IonLabel>
+                </IonItem>
+                <IonItem detail={false}  button onClick={() => store.doLogout()}>
+                  <IonLabel>Logout</IonLabel>
+                </IonItem>
+              </IonList>
+            </IonPopover>
           </div>
         </IonButtons>
       )}

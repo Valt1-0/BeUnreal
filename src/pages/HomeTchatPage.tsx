@@ -38,7 +38,7 @@ const Tchat: React.FC = () => {
 
   return (
     <IonPage >
-      <IonHeader translucent={true}>
+      <IonHeader >
         <IonToolbar >
           <IonButtons slot="start">
             <IonBackButton defaultHref="/your-default-route" />
@@ -61,7 +61,6 @@ const Tchat: React.FC = () => {
           {tchats.map((tchat: any) => (
             <IonItem
               key={tchat.id}
-              lines="none"
               routerLink={`/tchat/${tchat.id}`}
             >
               <IonAvatar slot="start">
