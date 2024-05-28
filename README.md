@@ -16,6 +16,7 @@ BeUnreal is an Ionic app that utilizes the Capacitor plugin to provide camera an
 1. Clone the repository: `git clone https://github.com/Valt1-0/BeUnreal.git`
 2. Navigate to the project directory: `cd BeUnreal`
 3. Install the dependencies: `npm install`
+4. Setup Vite build : `npm run build`
 4. Do the capacitor sync: `npx cap sync`
 
 ## Configuration
