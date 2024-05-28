@@ -149,7 +149,7 @@ const Home = () => {
                         />
                         <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 p-1 flex justify-center items-center text-black bg-white bg-opacity-80 rounded-md shadow-lg">
                           <p className="text-2x font-eloquiabold">
-                            {lastBeUnreal.user.username}
+                            {lastBeUnreal?.user?.username}
                           </p>
                         </div>
                       </IonCard>
@@ -160,38 +160,37 @@ const Home = () => {
             )}
           </Swiper>
         </div>
-       
-          <div className="mt-4">
-            <IonText className="font-eloquiabold text-lg m-3">
-              Découvertes dans votre entourage
-            </IonText>
-            <div className="scroll-container">
-              <Swiper
-                slidesPerView={3}
-                spaceBetween={20}
-                pagination={{
-                  clickable: true,
-                }}
-              >
-                {discoveredBeUnReal.map((card: any, index: number) => (
-                  <SwiperSlide key={index}>
-                    <IonCard>
-                      <IonImg
-                        src={card.url}
-                        style={{ width: "100%", height: "auto" }}
-                      />
-                      <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 p-1 flex justify-center items-center text-black bg-white bg-opacity-80 rounded-md shadow-lg">
-                        <p className="text-2x font-eloquiabold">
-                          {card.username}
-                        </p>
-                      </div>
-                    </IonCard>
-                  </SwiperSlide>
-                ))}
-              </Swiper>
-            </div>
+
+        <div className="mt-4">
+          <IonText className="font-eloquiabold text-lg m-3">
+            Découvertes dans votre entourage
+          </IonText>
+          <div className="scroll-container">
+            <Swiper
+              slidesPerView={3}
+              spaceBetween={20}
+              pagination={{
+                clickable: true,
+              }}
+            >
+              {discoveredBeUnReal.map((card: any, index: number) => (
+                <SwiperSlide key={index}>
+                  <IonCard>
+                    <IonImg
+                      src={card.url}
+                      style={{ width: "100%", height: "auto" }}
+                    />
+                    <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 p-1 flex justify-center items-center text-black bg-white bg-opacity-80 rounded-md shadow-lg">
+                      <p className="text-2x font-eloquiabold">
+                        {card.username}
+                      </p>
+                    </div>
+                  </IonCard>
+                </SwiperSlide>
+              ))}
+            </Swiper>
           </div>
-       
+        </div>
 
         <div>
           <IonButton

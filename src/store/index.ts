@@ -138,7 +138,11 @@ export class Store {
   // }
 
   getTchatMessages = (_chatId: string, _userID: string) => {
-    if (!_chatId || !_userID) return null;
+
+    if (!_chatId) {
+      this.tchatMessages = []
+      return null;
+    };
     return firebaseService.getMessages(_chatId, _userID, (messages: any[]) => {
       runInAction(() => {
         this.tchatMessages = messages;

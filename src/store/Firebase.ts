@@ -92,7 +92,7 @@ const followedUsers = followerDocs.docs.map((doc) => doc.id);
     currentLocation.latitude,
     currentLocation.longitude,
   ];
-  const radiusInM = 9000 * 1000;
+  const radiusInM = 30 * 1000;
 
   // Obtenir les limites de la requête geohash
   const bounds = geofire.geohashQueryBounds(center, radiusInM);

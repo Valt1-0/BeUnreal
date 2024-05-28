@@ -192,34 +192,36 @@ const FriendsPage: React.FC = () => {
         )}
         {selectedSegment == "requests" && (
           <IonList>
-            {pendingFriendRequestsRealtime.map((user: any) => (
-              <IonItem key={user.uid}>
-                <IonAvatar slot="start">
-                  <img src={user.avatar} />
-                </IonAvatar>
-                <IonLabel>{user.username}</IonLabel>
-                <IonButton
-                  fill="clear"
-                  className="border rounded text-white w-1/4"
-                  slot="end"
-                  onClick={() => {
-                    handleFriendRequest(user.from, true);
-                  }}
-                >
-                  Accept
-                </IonButton>
-                <IonButton
-                  fill="clear"
-                  className="border rounded text-white w-1/4"
-                  slot="end"
-                  onClick={() => {
-                    handleFriendRequest(user.from, false);
-                  }}
-                >
-                  Refuse
-                </IonButton>
-              </IonItem>
-            ))}
+            {pendingFriendRequestsRealtime.length > 0 && pendingFriendRequestsRealtime.map(
+              (user: any) => (
+                <IonItem key={user.uid}>
+                  <IonAvatar slot="start">
+                    <img src={user.avatar} />
+                  </IonAvatar>
+                  <IonLabel>{user.username}</IonLabel>
+                  <IonButton
+                    fill="clear"
+                    className="border rounded text-white w-1/4"
+                    slot="end"
+                    onClick={() => {
+                      handleFriendRequest(user.from, true);
+                    }}
+                  >
+                    Accept
+                  </IonButton>
+                  <IonButton
+                    fill="clear"
+                    className="border rounded text-white w-1/4"
+                    slot="end"
+                    onClick={() => {
+                      handleFriendRequest(user.from, false);
+                    }}
+                  >
+                    Refuse
+                  </IonButton>
+                </IonItem>
+              )
+            )}
           </IonList>
         )}
       </IonContent>

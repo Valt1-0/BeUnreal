@@ -58,6 +58,11 @@ useEffect(() => {
   useEffect(() => {
     fetchTchatMessage();
   }, []);
+
+        
+  useEffect(() => {
+    fetchTchatMessage();
+  }, [id]);
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       setImageFile(e.target.files[0]);
